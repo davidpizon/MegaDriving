@@ -2,6 +2,8 @@
 #include "resources.h"
 
 #include "grass.h"
+#include "track.h"
+
 
 #define VERTICAL_REZ 224  // number of lines in the screen.
 
@@ -10,62 +12,10 @@
 // OTOH back ground B is 512 wide  (512-320)/2 = -96
 #define SCROLL_CENTER_B -96
 
-// Zmap for tracking segment position (80, we're shorter than the lou examples)
-#define ZMAP_LENGTH 80 
 fastfix16 zmap[ZMAP_LENGTH];
 
 #define SKY_HEIGHT 144
 
-// Road data
-#define ROAD_SEGMENTS_LENGTH 31
-typedef struct
-{
-    fastfix16 dx;  // rate of change for the road.
-    fastfix16 bgdx; // rate of change for background sky scrolling.
-} ROAD_SEGMENT;
-const ROAD_SEGMENT segments[ROAD_SEGMENTS_LENGTH] = {
-        {FASTFIX16(-0.000), FASTFIX16(0.000)},
-        // curve left slowly
-        {FASTFIX16(-0.001), FASTFIX16(-0.04)},
-        {FASTFIX16(-0.002), FASTFIX16(-0.08)},
-        {FASTFIX16(-0.004), FASTFIX16(-0.16)},
-        {FASTFIX16(-0.006), FASTFIX16(-0.24)},
-        {FASTFIX16(-0.008), FASTFIX16(-0.32)},
-        {FASTFIX16(-0.010), FASTFIX16(-0.40)},
-        {FASTFIX16(-0.012), FASTFIX16(-0.48)},
-        {FASTFIX16(-0.014), FASTFIX16(-0.56)},
-        {FASTFIX16(-0.012), FASTFIX16(-0.48)},
-        {FASTFIX16(-0.011), FASTFIX16(-0.44)},
-        {FASTFIX16(-0.010), FASTFIX16(-0.40)},
-        {FASTFIX16(-0.009), FASTFIX16(-0.36)},
-        {FASTFIX16(-0.008), FASTFIX16(-0.32)},
-        {FASTFIX16(-0.004), FASTFIX16(-0.16)},
-        {FASTFIX16(-0.002), FASTFIX16(-0.08)},
-
-        {FASTFIX16(0.000), FASTFIX16(0.000)}, 
-        {FASTFIX16(0.000), FASTFIX16(0.000)}, 
-        // curve right
-        {FASTFIX16(0.030), FASTFIX16(1.20)}, 
-        {FASTFIX16(0.026), FASTFIX16(1.04)}, 
-        {FASTFIX16(0.022), FASTFIX16(0.88)}, 
-        {FASTFIX16(0.018), FASTFIX16(0.72)}, 
-        {FASTFIX16(0.014), FASTFIX16(0.56)}, 
-        {FASTFIX16(0.012), FASTFIX16(0.48)}, 
-        {FASTFIX16(0.008), FASTFIX16(0.32)}, 
-        {FASTFIX16(0.004), FASTFIX16(0.16)}, 
-
-        {FASTFIX16(0.002), FASTFIX16(0.08)}, 
-        {FASTFIX16(0.000), FASTFIX16(0.00)}, 
-        {FASTFIX16(-0.002), FASTFIX16(-0.08)},
-        {FASTFIX16(-0.001), FASTFIX16(-0.04)},
-
-        {FASTFIX16(0.000), FASTFIX16(0.000)}, 
-
-};
-
-
-u16 bottom_segments_index = 0;
-u16 segments_index = 0;
 
 // speed the 'vehicle' moves through the road
 fastfix16 speed = FASTFIX16(0.00);
@@ -75,74 +25,29 @@ s16 HscrollA[VERTICAL_REZ];
 s16 HscrollB[VERTICAL_REZ];
 
 // position variables.
-fastfix16 segment_position = FASTFIX16(0); // keep track fo the segment position onscreen
-fastfix16 background_position = FASTFIX16(SCROLL_CENTER_A); // handle background X position
+u16 pos = 0;
+//fastfix16 position = FASTFIX16(0); // keep track fo the segment position onscreen
+fastfix16 background_position = FASTFIX16(SCROLL_CENTER_B); // handle background X position
 
 
 void updateScrolling()
 {
-    fastfix16 current_x = FASTFIX16(0); // Lou's pseudo 3d page says to use Half of the screen width,
-                                                            // but I've defined SCROLL_CENTER_A to handle this
-
-    fastfix16 dx = FASTFIX16(0);    // Curve amount, constant per segment.
-    fastfix16 ddx = FASTFIX16(0); // Curve amount, changes per line
-
-
-    // for each line of the screen from the bottom to the top
-    for (u16 y = 0; y < ZMAP_LENGTH; ++y)
-    {
-        // I've defined the ZMAP to have the bottom of the screen
-        // (nearest position) start at zmap[0]
-        fastfix16 z = zmap[y];
-        // if line of screen's Z Map position is below segment position
-        if (z < segment_position)
-        {
-            // dx = bottom_segment.dx
-            dx = segments[bottom_segments_index].dx;
-        }
-        else // if line of Screen's Z map position is above segment position.
-        {
-            // dx = segment.dx
-            dx = segments[segments_index].dx;
-        }
-
-        ddx += dx;
-        current_x += ddx;
-
-        // this_line.x = current_x
-        // we'll use horizontal scrolling of BG_A to fake curves.
-        HscrollA[223 - y] = SCROLL_CENTER_A + FF16_toInt(current_x);
-    }
+    u16 offset = pos_to_scroll_data_offset[pos];
+    memcpy( HscrollA + ROAD_START_LINE, scroll_data + offset, 160 );
+    //HscrollA[223 - y] = SCROLL_CENTER_A + FF16_toInt(current_x);
 
     // scroll the background
-    background_position = background_position - segments[bottom_segments_index].bgdx;
+    background_position += pos_to_bg_dx[pos];
+
     for (u16 y = 0; y < SKY_HEIGHT; ++y)
     {
         HscrollB[y] = FF16_toInt(background_position);
-    }
-
-    // Move segments
-    segment_position = segment_position + speed;
-    if (FF16_toInt(segment_position) < 0) // 0 is nearest
-    {
-        // bottom_segment = segment
-        bottom_segments_index = segments_index;
-
-        // segment.position = zmap.length - 1
-        segment_position = zmap[ZMAP_LENGTH - 1]; // Send segment to farthest visible distance
-        // fetch next segment from road
-        segments_index++; // segment_index is used to get segment.dx
-        if (segments_index == ROAD_SEGMENTS_LENGTH)
-        {
-            segments_index -= ROAD_SEGMENTS_LENGTH; // go back to the start
-        }
     }
 }
 
 
 
 
-//extern void drawAt(char* dest, char* source, s16 startPixel, s16 lastTilePixel, s16 tiles );
 
 
 int main(bool arg)
@@ -151,11 +56,11 @@ int main(bool arg)
     //////////////////////////////////////////////////////////////
     // http://www.extentofthejam.com/pseudo/
     // Z = Y_world / (Y_screen - (height_screen / 2))
-    for (u16 i = 0; i < ZMAP_LENGTH; ++i)
-    {
-        zmap[i] = FF16_div(FASTFIX16(-75), FASTFIX16(i) - FASTFIX16(112));
-        KLog_f1("FASTFIX16(", zmap[i]);
-    }
+//    for (u16 i = 0; i < ZMAP_LENGTH; ++i)
+//    {
+//        zmap[i] = FF16_div(FASTFIX16(-75), FASTFIX16(i) - FASTFIX16(112));
+//        KLog_f1("FASTFIX16(", zmap[i]);
+//    }
 
 
     //////////////////////////////////////////////////////////////
@@ -231,12 +136,6 @@ int main(bool arg)
     s16 frame = 0;
     s16 delay = 0;
 
-    //////////////////////////////////////////////////////////////
-    // init segments
-    bottom_segments_index = 0;
-    segments_index = 1;
-    segment_position = zmap[ZMAP_LENGTH - 1]; // put it at the farthest away point
-
     // set speed through z
     speed = FASTFIX16(-0.1);
 
@@ -263,6 +162,10 @@ int main(bool arg)
             {
                 frame = 0;
             }
+        }
+        pos++;
+        if( pos  > POS_DATA_LEN ) {
+            pos = 0;
         }
 
         ///////////////////////////////////////////////////////
