@@ -21,7 +21,7 @@ fastfix16 zmap[ZMAP_LENGTH];
 fastfix16 speed = FASTFIX16(0.00);
 
 // Horizontal scrolling values
-s16 HscrollA[VERTICAL_REZ];
+s16 HscrollA[ZMAP_LENGTH];
 s16 HscrollB[VERTICAL_REZ];
 
 // position variables.
@@ -33,15 +33,18 @@ fastfix16 background_position = FASTFIX16(SCROLL_CENTER_B); // handle background
 void updateScrolling()
 {
     u16 offset = pos_to_scroll_data_offset[pos];
-    memcpy( HscrollA + ROAD_START_LINE, scroll_data + offset, 160 );
-    //HscrollA[223 - y] = SCROLL_CENTER_A + FF16_toInt(current_x);
+    memcpy( HscrollA, scroll_data + offset, 160 );
 
     // scroll the background
     background_position += pos_to_bg_dx[pos];
-
-    for (u16 y = 0; y < SKY_HEIGHT; ++y)
+    for (u16 y = 0; y < SKY_HEIGHT; y += 6 )
     {
         HscrollB[y] = FF16_toInt(background_position);
+        HscrollB[y+1] = FF16_toInt(background_position);
+        HscrollB[y+2] = FF16_toInt(background_position);
+        HscrollB[y+3] = FF16_toInt(background_position);
+        HscrollB[y+4] = FF16_toInt(background_position);
+        HscrollB[y+5] = FF16_toInt(background_position);
     }
 }
 
@@ -52,15 +55,6 @@ void updateScrolling()
 
 int main(bool arg)
 {
-
-    //////////////////////////////////////////////////////////////
-    // http://www.extentofthejam.com/pseudo/
-    // Z = Y_world / (Y_screen - (height_screen / 2))
-//    for (u16 i = 0; i < ZMAP_LENGTH; ++i)
-//    {
-//        zmap[i] = FF16_div(FASTFIX16(-75), FASTFIX16(i) - FASTFIX16(112));
-//        KLog_f1("FASTFIX16(", zmap[i]);
-//    }
 
 
     //////////////////////////////////////////////////////////////
@@ -181,7 +175,7 @@ int main(bool arg)
                 DMA_QUEUE);
 
         // curve the road with horizontal scrolling.
-        VDP_setHorizontalScrollLine(BG_A, 0, HscrollA, VERTICAL_REZ, DMA_QUEUE); // TODO: scroll the bottom 80 lines instead of the entire VERTICAL_REZ
+        VDP_setHorizontalScrollLine(BG_A, ROAD_START_LINE, HscrollA, ZMAP_LENGTH, DMA_QUEUE); // TODO: scroll the bottom 80 lines instead of the entire VERTICAL_REZ
         VDP_setHorizontalScrollLine(BG_B, 0, HscrollB, SKY_HEIGHT, DMA_QUEUE);
         SYS_doVBlankProcess();
     }
