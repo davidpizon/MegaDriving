@@ -12,7 +12,6 @@ const fastfix16 data_step_size = FASTFIX16( 0.025000 );
 
 extern const s16 scroll_data[];
 extern const u16 pos_to_scroll_data_offset[];
-
-extern const fix32 pos_to_bg_dx[];
+extern const fix16 pos_to_bg_dx[];
 
 #endif // _TRACK_H_
