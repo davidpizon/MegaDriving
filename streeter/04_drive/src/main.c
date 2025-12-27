@@ -27,7 +27,7 @@ s16 HscrollB[VERTICAL_REZ];
 // position variables.
 u16 pos = 0;
 //fastfix16 position = FASTFIX16(0); // keep track fo the segment position onscreen
-fastfix16 background_position = FASTFIX16(SCROLL_CENTER_B); // handle background X position
+fix32 background_position = FIX32(SCROLL_CENTER_B); // handle background X position
 
 
 // Sprites
@@ -44,14 +44,22 @@ struct CP_SPRITE carSprite;
 
 void updateScrolling()
 {
+    // scroll the road
     u16 offset = pos_to_scroll_data_offset[pos];
-    memcpy( HscrollA, scroll_data + offset, 160 );
+    memcpy( HscrollA, scroll_data + offset, 158 );
 
     // scroll the background
-    background_position += pos_to_bg_dx[pos];
-    for (u16 y = 0; y < SKY_HEIGHT; y++ )
+    background_position = background_position +  pos_to_bg_dx[pos];
+    s16 bgs = F32_toInt( background_position );
+    
+    for (u16 y = 0; y < SKY_HEIGHT; y+=6 )
     {
-        HscrollB[y] = FF16_toInt(background_position);
+        HscrollB[y] = bgs;
+        HscrollB[y+1] = bgs;
+        HscrollB[y+2] = bgs;
+        HscrollB[y+3] = bgs;
+        HscrollB[y+4] = bgs;
+        HscrollB[y+5] = bgs;
     }
 }
 
@@ -146,8 +154,8 @@ int main(bool arg)
     carSprite.pos_x = FIX16(116.0);
     carSprite.pos_y = FIX16(160.0);
     carSprite.sprite = SPR_addSprite(&car,                        // Sprite defined in resources
-            F32_toInt(carSprite.pos_x), // starting X position
-            F32_toInt(carSprite.pos_y), // starting Y position
+            F16_toInt(carSprite.pos_x), // starting X position
+            F16_toInt(carSprite.pos_y), // starting Y position
             TILE_ATTR(PAL2,              // specify palette
                 1,                 // Tile priority ( with background)
                 FALSE,             // flip the sprite vertically?

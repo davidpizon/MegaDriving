@@ -10,8 +10,8 @@
 const fastfix16 total_road_length = FASTFIX16( 19.190000 );
 const fastfix16 data_step_size = FASTFIX16( 0.025000 );
 
-extern s16 scroll_data[];
-extern u16 pos_to_scroll_data_offset[];
-extern fastfix16 pos_to_bg_dx[];
+extern const s16 scroll_data[];
+extern const u16 pos_to_scroll_data_offset[];
+extern const fix16 pos_to_bg_dx[];
 
 #endif // _TRACK_H_
