@@ -49,19 +49,11 @@ void updateScrolling()
 
     // scroll the background
     background_position += pos_to_bg_dx[pos];
-    for (u16 y = 0; y < SKY_HEIGHT; y += 6 )
+    for (u16 y = 0; y < SKY_HEIGHT; y++ )
     {
         HscrollB[y] = FF16_toInt(background_position);
-        HscrollB[y+1] = FF16_toInt(background_position);
-        HscrollB[y+2] = FF16_toInt(background_position);
-        HscrollB[y+3] = FF16_toInt(background_position);
-        HscrollB[y+4] = FF16_toInt(background_position);
-        HscrollB[y+5] = FF16_toInt(background_position);
     }
 }
-
-
-
 
 
 
@@ -79,7 +71,7 @@ int main(bool arg)
     VDP_setScrollingMode(HSCROLL_LINE, VSCROLL_PLANE);
     for (int i = 0; i < VERTICAL_REZ; i++)
     {
-        HscrollA[i] = SCROLL_CENTER_A;
+        //HscrollA[i] = SCROLL_CENTER_A;
         HscrollB[i] = SCROLL_CENTER_B;
     }
 
@@ -193,7 +185,7 @@ int main(bool arg)
             }
         }
         pos++;
-        if( pos  > POS_DATA_LEN ) {
+        if( pos >= POS_DATA_LEN ) {
             pos = 0;
         }
 
