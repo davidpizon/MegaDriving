@@ -16,6 +16,27 @@ fastfix16 zmap[ZMAP_LENGTH];
 
 #define SKY_HEIGHT 144
 
+/*
+http://www.extentofthejam.com/pseudo/A
+
+Perspective-style Steering
+It's much less interesting looking to have a game in which when you steer, it
+only moves the car sprite. So, instead of moving the player's car sprite, you
+keep it in the center of the screen and move the road-- more importantly, you
+move the position of the center-line at the front (bottom) of the screen. Now,    <<< centerLine
+you want to assume that the player is going to be looking at the road always, so
+make the road end at the center of the screen. You'll need an angle-of-road             <<< angleOfRoad
+variable for this. So, calculate the difference between the center of the screen
+and the position of the front of the road, and divide by the height of the
+road's graphic. That will give you the amount to move the center of the road
+each line.
+*/
+fastfix16 centerLine = FASTFIX16(160); // center line at the front (bottom) of the screen
+fastfix16 angleOfRoad[ZMAP_LENGTH];
+s16 turning = 0;
+fastfix16 steeringDir = FASTFIX16(0);
+extern fastfix16 perspective_step_from_centerline[];
+
 
 // speed the 'vehicle' moves through the road
 fastfix16 speed = FASTFIX16(0.00);
@@ -27,7 +48,7 @@ s16 HscrollB[VERTICAL_REZ];
 // position variables.
 u16 pos = 0;
 //fastfix16 position = FASTFIX16(0); // keep track fo the segment position onscreen
-fix32 background_position = FIX32(SCROLL_CENTER_B); // handle background X position
+fix16 background_position = FIX16(SCROLL_CENTER_B); // handle background X position
 
 
 // Sprites
@@ -46,24 +67,133 @@ void updateScrolling()
 {
     // scroll the road
     u16 offset = pos_to_scroll_data_offset[pos];
-    memcpy( HscrollA, scroll_data + offset, 158 );
+    //memcpy( HscrollA, scroll_data + offset, 158 );
+    // loop through scroll data and add on the perspective steer
+    for (u16 y = 0; y < ZMAP_LEN; y++ )
+    {
+        HscrollA[y] = scroll_data[offset] + 
+    }
 
     // scroll the background
     background_position = background_position +  pos_to_bg_dx[pos];
-    s16 bgs = F32_toInt( background_position );
-    
-    for (u16 y = 0; y < SKY_HEIGHT; y+=6 )
+    s16 bgs = F16_toInt( background_position );
+
+    //#pragma unroll
+    #pragma GCC unroll 20
+    for (u16 y = 0; y < SKY_HEIGHT; y++ )
     {
         HscrollB[y] = bgs;
-        HscrollB[y+1] = bgs;
-        HscrollB[y+2] = bgs;
-        HscrollB[y+3] = bgs;
-        HscrollB[y+4] = bgs;
-        HscrollB[y+5] = bgs;
     }
 }
+ 
+
+static void joypadHandler(u16 joypadId, u16 changed, u16 state)
+{
+    if (joypadId == JOY_1)
+    {
+        if (state & BUTTON_LEFT)
+        {
+            turning = -1; // turn left
+        }
+        else if (state & BUTTON_RIGHT)
+        {
+            turning = 1; // turn right
+        }
+        else
+        {
+            turning = 0; // not turning.
+        }
+    }
+
+}
+
+void updatePlayer() {
+    // handle turning
+    if (turning == 1)
+    {
+        steeringDir = steeringDir + FASTFIX16(2.2);
+        if (steeringDir > FASTFIX16(20))
+        {
+            steeringDir = FASTFIX16(20);
+        }
+    }
+    else if (turning == -1)
+    {
+        steeringDir = steeringDir - FASTFIX16(2.2);
+        if (steeringDir < FASTFIX16(-20))
+        {
+            steeringDir = FASTFIX16(-20);
+        }
+    }
+    else
+    {
+        // pull back to center
+        if (steeringDir < FASTFIX16(0.0))
+        {
+            steeringDir = steeringDir + FASTFIX16(3.2);
+            if (steeringDir > FASTFIX16(0.0))
+            {
+                steeringDir = FASTFIX16(0.0);
+            }
+        }
+        else if (steeringDir > FASTFIX16(0.0))
+        {
+            steeringDir = steeringDir - FASTFIX16(3.2);
+            if (steeringDir < FASTFIX16(0.0))
+            {
+                steeringDir = FASTFIX16(0.0);
+            }
+        }
+    }
+
+    // set frame based on steeringDir as long as we're moving forward.
+    if (steeringDir < FASTFIX16(-12.00))
+    {
+        SPR_setFrame(carSprite.sprite, 1);
+    }
+    else if (steeringDir < FASTFIX16(-0.02))
+    {
+        SPR_setFrame(carSprite.sprite, 2);
+    }
+    else if (steeringDir > FASTFIX16(12.0))
+    {
+        SPR_setFrame(carSprite.sprite, 5);
+    }
+    else if (steeringDir > FASTFIX16(0.02))
+    {
+        SPR_setFrame(carSprite.sprite, 4);
+    }
+    else
+    {
+        // centered
+        SPR_setFrame(carSprite.sprite, 3);
+    }
 
 
+    // start shifting the road based on speed, steeringDir and road DX
+
+
+    // >> So, instead of moving the player's car sprite, you keep it in the center of the
+    // >> screen and move the road-- more importantly, **YOU MOVE THE POSITION OF THE
+    // >> CENTER-LINE AT THE FRONT (BOTTOM) OF THE SCREEN**. Now, you want to assume that
+    // >> the player is going to be looking at the road always, SO MAKE THE ROAD END AT
+    // >> THE CENTER OF THE SCREEN. You'll need an angle-of-road variable for this. So,
+    // >> CALCULATE THE DIFFERENCE BETWEEN THE CENTER OF THE SCREEN AND THE POSITION OF
+    // >> THE FRONT (BOTTOM) OF THE ROAD, and DIVIDE BY THE HEIGHT OF THE ROAD'S GRAPHIC. That
+    // >> will give you the amount to move the center of the road each line.
+
+
+    // >>  variable for this. So, calculate the difference between the center of the screen
+    // >>  and the position of the front of the road, and divide by the height of the
+    // >>  road's graphic. That will give you the amount to move the center of the road
+    // >>  each line.
+    if (turning != 0)
+    {
+        //KLog_F1("steeringDir: ", steeringDir);
+        centerLine = centerLine - steeringDir;
+    }
+
+}
 
 int main(bool arg)
 {
@@ -140,7 +270,7 @@ int main(bool arg)
                 );
     }
 
-    s16 offset = 1;
+    //s16 offset = 1;
     s16 frame = 0;
     s16 delay = 0;
 
@@ -151,8 +281,8 @@ int main(bool arg)
     SPR_init();
     PAL_setPalette(PAL2, car_pal.data, CPU);
     carSprite.sprite = NULL;
-    carSprite.pos_x = FIX16(116.0);
-    carSprite.pos_y = FIX16(160.0);
+    carSprite.pos_x = FIX16(146.0);
+    carSprite.pos_y = FIX16(184.0);
     carSprite.sprite = SPR_addSprite(&car,                        // Sprite defined in resources
             F16_toInt(carSprite.pos_x), // starting X position
             F16_toInt(carSprite.pos_y), // starting Y position
@@ -166,9 +296,17 @@ int main(bool arg)
 
 
     // set speed through z
-    speed = FASTFIX16(-0.1);
+    // speed = FASTFIX16(-0.1);
+
+
+    // Asynchronous joystick handler.
+    JOY_init();
+    JOY_setEventHandler(joypadHandler);
 
     while(TRUE) {
+
+
+        updatePlayer();
           
         ///////////////////////////////////////////////////////
         // update scrolling values
@@ -184,7 +322,7 @@ int main(bool arg)
                 DMA_QUEUE              // transfer method
                 );
         delay +=1;
-        if( delay > 2 ) {
+        if( delay > 1 ) {
             delay = 0;
             frame += 1;
             if (frame > 5)
