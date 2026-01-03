@@ -7,8 +7,8 @@
 
 #define VERTICAL_REZ 224  // number of lines in the screen.
 
-// A is 320 wide, so no need to offset it
-#define SCROLL_CENTER_A 0
+// A is 512 wide, so no need to offset it
+#define SCROLL_CENTER_A -96
 // OTOH back ground B is 512 wide  (512-320)/2 = -96
 #define SCROLL_CENTER_B -96
 
@@ -65,16 +65,18 @@ struct CP_SPRITE carSprite;
 
 void updateScrolling()
 {
-    // scroll the road
-    u16 offset = pos_to_scroll_data_offset[pos];
-    //memcpy( HscrollA, scroll_data + offset, 158 );
-    // loop through scroll data and add on the perspective steer
-    #pragma GCC unroll 80
-    for (u16 y = 0; y < ZMAP_LENGTH; y++ )
-    {
-        HscrollA[y] = scroll_data[offset+y];
-    }
-
+//    // scroll the road
+//    u16 offset = pos_to_scroll_data_offset[pos];
+//    //memcpy( HscrollA, scroll_data + offset, 158 );
+//    // loop through scroll data and add on the perspective steer
+//    #pragma GCC unroll 80
+//    for (u16 y = 0; y < ZMAP_LENGTH; y++ )
+//    {
+//				
+//        //HscrollA[y] = scroll_data[offset+y] + FF16_toInt(angleOfRoad[y]);
+//        HscrollA[y] =  FF16_toInt(angleOfRoad[y]);
+//    }
+//
     // scroll the background
     background_position = background_position +  pos_to_bg_dx[pos];
     s16 bgs = F16_toInt( background_position );
@@ -147,6 +149,7 @@ void updatePlayer() {
         }
     }
 
+
     // set frame based on steeringDir as long as we're moving forward.
 		// LEFT
     if (steeringDir < FASTFIX16(-16.00))
@@ -212,6 +215,31 @@ void updatePlayer() {
         centerLine = centerLine - steeringDir;
     }
 
+    // Limit how far the car can move to the side
+    if (centerLine > FASTFIX16(323))
+    {
+        centerLine = FASTFIX16(323);
+    }
+    else if (centerLine < FASTFIX16(-4))
+    {
+        centerLine = FASTFIX16(-4);
+    }
+
+    // update angleOfRoad for perspective steering.
+    //        fastfix32 step = FF32_div((centerLine - FASTFIX32(160)), // calc diff between center and position at front
+    //                FASTFIX32(ZMAP_LENGTH));              // divide by the height of the road graphic. (DIV overflow with FF32)
+    //
+    fastfix16 step = perspective_step_from_centerline[ FF16_toInt(centerLine) + 4 ];   //work around division overflow with LUT.
+
+    fastfix16 current = FASTFIX16(0);
+    #pragma GCC unroll 80
+    for (int i = ZMAP_LENGTH-1; i >= 0; --i)// farthest has lowest offset.
+    {
+        angleOfRoad[i] = current;
+        current = current + step;
+    }
+
+
 }
 
 int main(bool arg)
@@ -226,9 +254,12 @@ int main(bool arg)
     //////////////////////////////////////////////////////////////
     // initialize scrolling values to the center of the image.
     VDP_setScrollingMode(HSCROLL_LINE, VSCROLL_PLANE);
+    for (int i = 0; i < ZMAP_LENGTH; i++)
+    {
+        HscrollA[i] = SCROLL_CENTER_A;
+    }
     for (int i = 0; i < VERTICAL_REZ; i++)
     {
-        //HscrollA[i] = SCROLL_CENTER_A;
         HscrollB[i] = SCROLL_CENTER_B;
     }
 
@@ -249,7 +280,7 @@ int main(bool arg)
     VDP_setTileMapEx(BG_A, road_images.tilemap, TILE_ATTR_FULL(PAL0, FALSE, FALSE, FALSE, roadIndex),
             0,               // Plane X destination
             18 ,             // plane Y destination
-            0,               // Region X start position
+            12,               // Region X start position
             0,               // Region Y start position
             40, // width  (went with 64 becasue default width is 64.  Viewable screen is 40)
             10,             // height
@@ -368,9 +399,9 @@ int main(bool arg)
         // Handle forward motion
         // naive approach? blast the entire rect, does look ok.
         VDP_setTileMapEx(BG_A, road_images.tilemap, TILE_ATTR_FULL(PAL0, FALSE, FALSE, FALSE, roadIndex),
-                0,               // Plane X destination
+                12,               // Plane X destination
                 18,//27,             // plane Y destination
-                0,               // Region X start position
+                12,               // Region X start position
                 frame_offset,
                 40, // width  (went with 64 becasue default width is 64.  Viewable screen is 40)
                 10, // 1,             // height
