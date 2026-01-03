@@ -65,18 +65,19 @@ struct CP_SPRITE carSprite;
 
 void updateScrolling()
 {
-//    // scroll the road
-//    u16 offset = pos_to_scroll_data_offset[pos];
-//    //memcpy( HscrollA, scroll_data + offset, 158 );
-//    // loop through scroll data and add on the perspective steer
-//    #pragma GCC unroll 80
-//    for (u16 y = 0; y < ZMAP_LENGTH; y++ )
-//    {
-//				
-//        //HscrollA[y] = scroll_data[offset+y] + FF16_toInt(angleOfRoad[y]);
-//        HscrollA[y] =  FF16_toInt(angleOfRoad[y]);
-//    }
-//
+    // scroll the road
+    u16 offset = pos_to_scroll_data_offset[pos];
+    //u16 offset = pos_to_scroll_data_offset[0];
+    //memcpy( HscrollA, scroll_data + offset, 158 );
+    // loop through scroll data and add on the perspective steer
+    #pragma GCC unroll 80
+    for (u16 y = 0; y < ZMAP_LENGTH; y++ )
+    {
+        HscrollA[y] = scroll_data[offset+y] + SCROLL_CENTER_A;
+        //HscrollA[y] = scroll_data[offset+y] + FF16_toInt(angleOfRoad[y]);
+        //HscrollA[y] =  FF16_toInt(angleOfRoad[y]);
+    }
+
     // scroll the background
     background_position = background_position +  pos_to_bg_dx[pos];
     s16 bgs = F16_toInt( background_position );
@@ -278,7 +279,7 @@ int main(bool arg)
 
     // setup the tiles
     VDP_setTileMapEx(BG_A, road_images.tilemap, TILE_ATTR_FULL(PAL0, FALSE, FALSE, FALSE, roadIndex),
-            0,               // Plane X destination
+            12,               // Plane X destination
             18 ,             // plane Y destination
             12,               // Region X start position
             0,               // Region Y start position
