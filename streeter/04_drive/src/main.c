@@ -69,9 +69,10 @@ void updateScrolling()
     u16 offset = pos_to_scroll_data_offset[pos];
     //memcpy( HscrollA, scroll_data + offset, 158 );
     // loop through scroll data and add on the perspective steer
-    for (u16 y = 0; y < ZMAP_LEN; y++ )
+    #pragma GCC unroll 80
+    for (u16 y = 0; y < ZMAP_LENGTH; y++ )
     {
-        HscrollA[y] = scroll_data[offset] + 
+        HscrollA[y] = scroll_data[offset+y];
     }
 
     // scroll the background
@@ -111,7 +112,7 @@ void updatePlayer() {
     // handle turning
     if (turning == 1)
     {
-        steeringDir = steeringDir + FASTFIX16(2.2);
+        steeringDir = steeringDir + FASTFIX16(1.0);
         if (steeringDir > FASTFIX16(20))
         {
             steeringDir = FASTFIX16(20);
@@ -119,7 +120,7 @@ void updatePlayer() {
     }
     else if (turning == -1)
     {
-        steeringDir = steeringDir - FASTFIX16(2.2);
+        steeringDir = steeringDir - FASTFIX16(1.0);
         if (steeringDir < FASTFIX16(-20))
         {
             steeringDir = FASTFIX16(-20);
@@ -130,7 +131,7 @@ void updatePlayer() {
         // pull back to center
         if (steeringDir < FASTFIX16(0.0))
         {
-            steeringDir = steeringDir + FASTFIX16(3.2);
+            steeringDir = steeringDir + FASTFIX16(0.6);
             if (steeringDir > FASTFIX16(0.0))
             {
                 steeringDir = FASTFIX16(0.0);
@@ -138,7 +139,7 @@ void updatePlayer() {
         }
         else if (steeringDir > FASTFIX16(0.0))
         {
-            steeringDir = steeringDir - FASTFIX16(3.2);
+            steeringDir = steeringDir - FASTFIX16(0.6);
             if (steeringDir < FASTFIX16(0.0))
             {
                 steeringDir = FASTFIX16(0.0);
@@ -147,26 +148,44 @@ void updatePlayer() {
     }
 
     // set frame based on steeringDir as long as we're moving forward.
-    if (steeringDir < FASTFIX16(-12.00))
+		// LEFT
+    if (steeringDir < FASTFIX16(-16.00))
     {
-        SPR_setFrame(carSprite.sprite, 1);
+        SPR_setAnim(carSprite.sprite, 3);
+				SPR_setHFlip(carSprite.sprite,0);
+    }
+    else if (steeringDir < FASTFIX16(-8.0))
+    {
+        SPR_setAnim(carSprite.sprite, 2);
+				SPR_setHFlip(carSprite.sprite,0);
     }
     else if (steeringDir < FASTFIX16(-0.02))
     {
-        SPR_setFrame(carSprite.sprite, 2);
+        SPR_setAnim(carSprite.sprite, 1);
+				SPR_setHFlip(carSprite.sprite,0);
     }
-    else if (steeringDir > FASTFIX16(12.0))
+		// RIGHT
+    else if (steeringDir > FASTFIX16(16.0))
     {
-        SPR_setFrame(carSprite.sprite, 5);
+        SPR_setAnim(carSprite.sprite, 3);
+				SPR_setHFlip(carSprite.sprite,1);
     }
+    else if (steeringDir > FASTFIX16(8.0))
+    {
+        SPR_setAnim(carSprite.sprite, 2);
+				SPR_setHFlip(carSprite.sprite,1);
+		}
     else if (steeringDir > FASTFIX16(0.02))
     {
-        SPR_setFrame(carSprite.sprite, 4);
+        SPR_setAnim(carSprite.sprite, 1);
+				SPR_setHFlip(carSprite.sprite,1);
+   
     }
     else
     {
         // centered
-        SPR_setFrame(carSprite.sprite, 3);
+        SPR_setAnim(carSprite.sprite, 0);
+				SPR_setHFlip(carSprite.sprite,0);
     }
 
 
@@ -272,6 +291,7 @@ int main(bool arg)
 
     //s16 offset = 1;
     s16 frame = 0;
+    s16 frame_offset = 0;
     s16 delay = 0;
 
 
@@ -291,7 +311,9 @@ int main(bool arg)
                 FALSE,             // flip the sprite vertically?
                 FALSE              // flip the sprite horizontally
                 ));
-    SPR_setFrame(carSprite.sprite, 3);
+    SPR_setAnim(carSprite.sprite, 3);
+    SPR_setHFlip(carSprite.sprite, 1);
+    //SPR_setFrame(carSprite.sprite, 0);
 
 
 
@@ -304,7 +326,6 @@ int main(bool arg)
     JOY_setEventHandler(joypadHandler);
 
     while(TRUE) {
-
 
         updatePlayer();
           
@@ -325,9 +346,11 @@ int main(bool arg)
         if( delay > 1 ) {
             delay = 0;
             frame += 1;
+            frame_offset += 10;
             if (frame > 5)
             {
                 frame = 0;
+                frame_offset = 0;
             }
         }
         pos++;
@@ -338,10 +361,7 @@ int main(bool arg)
 
         // Draw car at now position
         SPR_setPosition(carSprite.sprite, F16_toInt(carSprite.pos_x), F16_toInt(carSprite.pos_y));
-
         SPR_update();
-
-
 
 
         ///////////////////////////////////////////////////////
@@ -351,7 +371,7 @@ int main(bool arg)
                 0,               // Plane X destination
                 18,//27,             // plane Y destination
                 0,               // Region X start position
-                frame*10, //+9,               // Region Y start position
+                frame_offset,
                 40, // width  (went with 64 becasue default width is 64.  Viewable screen is 40)
                 10, // 1,             // height
                 DMA_QUEUE);
