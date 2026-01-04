@@ -66,15 +66,13 @@ struct CP_SPRITE carSprite;
 void updateScrolling()
 {
     // scroll the road
-    //u16 offset = pos_to_scroll_data_offset[pos];
-    //u16 offset = pos_to_scroll_data_offset[0];
-    u16 offset = 0;
+    u16 offset = pos_to_scroll_data_offset[pos];
     //memcpy( HscrollA, scroll_data + offset, 158 );
     // loop through scroll data and add on the perspective steer
     #pragma GCC unroll 80
     for (u16 y = 0; y < ZMAP_LENGTH; y++ )
     {
-        HscrollA[y] = scroll_data[offset+y] + SCROLL_CENTER_A + F16_toInt( angleOfRoad[y] );
+        HscrollA[y] = scroll_data[offset+y] + SCROLL_CENTER_A + F16_toInt( angleOfRoad[y] );  // TODO: can probably bake-in scroll center 
     }
 
     // scroll the background
@@ -114,7 +112,7 @@ void updatePlayer() {
     // handle turning
     if (turning == 1)
     {
-        steeringDir = steeringDir + FIX16(1.0);
+        steeringDir = steeringDir + FIX16(0.6);
         if (steeringDir > FIX16(20))
         {
             steeringDir = FIX16(20);
@@ -122,7 +120,7 @@ void updatePlayer() {
     }
     else if (turning == -1)
     {
-        steeringDir = steeringDir - FIX16(1.0);
+        steeringDir = steeringDir - FIX16(0.6);
         if (steeringDir < FIX16(-20))
         {
             steeringDir = FIX16(-20);
@@ -133,7 +131,7 @@ void updatePlayer() {
         // pull back to center
         if (steeringDir < FIX16(0.0))
         {
-            steeringDir = steeringDir + FIX16(0.6);
+            steeringDir = steeringDir + FIX16(0.4);
             if (steeringDir > FIX16(0.0))
             {
                 steeringDir = FIX16(0.0);
@@ -141,7 +139,7 @@ void updatePlayer() {
         }
         else if (steeringDir > FIX16(0.0))
         {
-            steeringDir = steeringDir - FIX16(0.6);
+            steeringDir = steeringDir - FIX16(0.4);
             if (steeringDir < FIX16(0.0))
             {
                 steeringDir = FIX16(0.0);
@@ -213,32 +211,31 @@ void updatePlayer() {
     {
         //KLog_F1("steeringDir: ", steeringDir);
         centerLine = centerLine - steeringDir;
-    }
 
-    // Limit how far the car can move to the side
-    if (centerLine > FIX16(323))
-    {
-        centerLine = FIX16(323);
-    }
-    else if (centerLine < FIX16(-4))
-    {
-        centerLine = FIX16(-4);
-    }
+				// Limit how far the car can move to the side
+				if (centerLine > FIX16(323))
+				{
+					centerLine = FIX16(323);
+				}
+				else if (centerLine < FIX16(-4))
+				{
+					centerLine = FIX16(-4);
+				}
 
-    // update angleOfRoad for perspective steering.
-    //        fastfix32 step = FF32_div((centerLine - FASTFIX32(160)), // calc diff between center and position at front
-    //                FASTFIX32(ZMAP_LENGTH));              // divide by the height of the road graphic. (DIV overflow with FF32)
-    //
-    fix16 step = perspective_step_from_centerline[ F16_toInt(centerLine) + 4 ];   //work around division overflow with LUT.
+				// update angleOfRoad for perspective steering.
+				//        fastfix32 step = FF32_div((centerLine - FASTFIX32(160)), // calc diff between center and position at front
+				//                FASTFIX32(ZMAP_LENGTH));              // divide by the height of the road graphic. (DIV overflow with FF32)
+				//
+				fix16 step = perspective_step_from_centerline[ F16_toInt(centerLine) + 4 ];   //work around division overflow with LUT.
 
-		
-    fix16 current = FASTFIX16(0);
-    //#pragma GCC unroll 80
-    for (u16 i =0; i < ZMAP_LENGTH; ++ i ) 
-    {
-        angleOfRoad[i] = current;
-        current = current + step;
-    }
+				fix16 current = FASTFIX16(0);
+				#pragma GCC unroll 80
+				for (u16 i =0; i < ZMAP_LENGTH; ++i ) 
+				{
+					angleOfRoad[i] = current;
+					current = current + step;
+				}
+		}
 
 }
 
@@ -333,8 +330,8 @@ int main(bool arg)
     SPR_init();
     PAL_setPalette(PAL2, car_pal.data, CPU);
     carSprite.sprite = NULL;
-    carSprite.pos_x = FIX16(146.0);
-    carSprite.pos_y = FIX16(184.0);
+    carSprite.pos_x = FIX16(132.0); 
+    carSprite.pos_y = FIX16(186.0);
     carSprite.sprite = SPR_addSprite(&car,                        // Sprite defined in resources
             F16_toInt(carSprite.pos_x), // starting X position
             F16_toInt(carSprite.pos_y), // starting Y position
@@ -345,8 +342,6 @@ int main(bool arg)
                 ));
     SPR_setAnim(carSprite.sprite, 3);
     SPR_setHFlip(carSprite.sprite, 1);
-    //SPR_setFrame(carSprite.sprite, 0);
-
 
 
     // set speed through z
