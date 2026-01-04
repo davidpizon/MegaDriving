@@ -28,12 +28,12 @@ def main( args, loglevel ):
 
         outfile.write("#include <genesis.h>\n\n")
         outfile.write("// assumes centerline limited from -4 to 323, use +4 as the offset int\n")
-        outfile.write("const fastfix16 perspective_step_from_centerline[] = {\n")
+        outfile.write("const fix16 perspective_step_from_centerline[] = {\n")
         
         for center in range( min_center_line, max_center_line ):
             step = ( center - center_line ) / zmap_length
             logging.debug(" center: %d step: %f", center, step )
-            outfile.write(f"FASTFIX16( {step:.4f} ), ")
+            outfile.write(f"FIX16( {step:.4f} ), // {center}\n")
         outfile.write("\n};")
     
 

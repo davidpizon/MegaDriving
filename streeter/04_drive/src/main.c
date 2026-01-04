@@ -31,10 +31,10 @@ and the position of the front of the road, and divide by the height of the
 road's graphic. That will give you the amount to move the center of the road
 each line.
 */
-fastfix16 centerLine = FASTFIX16(160); // center line at the front (bottom) of the screen
-fastfix16 angleOfRoad[ZMAP_LENGTH];
+fix16 centerLine = FIX16(160); // center line at the front (bottom) of the screen
+fix16 angleOfRoad[ZMAP_LENGTH];
 s16 turning = 0;
-fastfix16 steeringDir = FASTFIX16(0);
+fix16 steeringDir = FIX16(0);
 extern fastfix16 perspective_step_from_centerline[];
 
 
@@ -66,16 +66,15 @@ struct CP_SPRITE carSprite;
 void updateScrolling()
 {
     // scroll the road
-    u16 offset = pos_to_scroll_data_offset[pos];
+    //u16 offset = pos_to_scroll_data_offset[pos];
     //u16 offset = pos_to_scroll_data_offset[0];
+    u16 offset = 0;
     //memcpy( HscrollA, scroll_data + offset, 158 );
     // loop through scroll data and add on the perspective steer
     #pragma GCC unroll 80
     for (u16 y = 0; y < ZMAP_LENGTH; y++ )
     {
-        HscrollA[y] = scroll_data[offset+y] + SCROLL_CENTER_A;
-        //HscrollA[y] = scroll_data[offset+y] + FF16_toInt(angleOfRoad[y]);
-        //HscrollA[y] =  FF16_toInt(angleOfRoad[y]);
+        HscrollA[y] = scroll_data[offset+y] + SCROLL_CENTER_A + F16_toInt( angleOfRoad[y] );
     }
 
     // scroll the background
@@ -115,37 +114,37 @@ void updatePlayer() {
     // handle turning
     if (turning == 1)
     {
-        steeringDir = steeringDir + FASTFIX16(1.0);
-        if (steeringDir > FASTFIX16(20))
+        steeringDir = steeringDir + FIX16(1.0);
+        if (steeringDir > FIX16(20))
         {
-            steeringDir = FASTFIX16(20);
+            steeringDir = FIX16(20);
         }
     }
     else if (turning == -1)
     {
-        steeringDir = steeringDir - FASTFIX16(1.0);
-        if (steeringDir < FASTFIX16(-20))
+        steeringDir = steeringDir - FIX16(1.0);
+        if (steeringDir < FIX16(-20))
         {
-            steeringDir = FASTFIX16(-20);
+            steeringDir = FIX16(-20);
         }
     }
     else
     {
         // pull back to center
-        if (steeringDir < FASTFIX16(0.0))
+        if (steeringDir < FIX16(0.0))
         {
-            steeringDir = steeringDir + FASTFIX16(0.6);
-            if (steeringDir > FASTFIX16(0.0))
+            steeringDir = steeringDir + FIX16(0.6);
+            if (steeringDir > FIX16(0.0))
             {
-                steeringDir = FASTFIX16(0.0);
+                steeringDir = FIX16(0.0);
             }
         }
-        else if (steeringDir > FASTFIX16(0.0))
+        else if (steeringDir > FIX16(0.0))
         {
-            steeringDir = steeringDir - FASTFIX16(0.6);
-            if (steeringDir < FASTFIX16(0.0))
+            steeringDir = steeringDir - FIX16(0.6);
+            if (steeringDir < FIX16(0.0))
             {
-                steeringDir = FASTFIX16(0.0);
+                steeringDir = FIX16(0.0);
             }
         }
     }
@@ -153,33 +152,33 @@ void updatePlayer() {
 
     // set frame based on steeringDir as long as we're moving forward.
 		// LEFT
-    if (steeringDir < FASTFIX16(-16.00))
+    if (steeringDir < FIX16(-16.00))
     {
         SPR_setAnim(carSprite.sprite, 3);
 				SPR_setHFlip(carSprite.sprite,0);
     }
-    else if (steeringDir < FASTFIX16(-8.0))
+    else if (steeringDir < FIX16(-8.0))
     {
         SPR_setAnim(carSprite.sprite, 2);
 				SPR_setHFlip(carSprite.sprite,0);
     }
-    else if (steeringDir < FASTFIX16(-0.02))
+    else if (steeringDir < FIX16(-0.02))
     {
         SPR_setAnim(carSprite.sprite, 1);
 				SPR_setHFlip(carSprite.sprite,0);
     }
 		// RIGHT
-    else if (steeringDir > FASTFIX16(16.0))
+    else if (steeringDir > FIX16(16.0))
     {
         SPR_setAnim(carSprite.sprite, 3);
 				SPR_setHFlip(carSprite.sprite,1);
     }
-    else if (steeringDir > FASTFIX16(8.0))
+    else if (steeringDir > FIX16(8.0))
     {
         SPR_setAnim(carSprite.sprite, 2);
 				SPR_setHFlip(carSprite.sprite,1);
 		}
-    else if (steeringDir > FASTFIX16(0.02))
+    else if (steeringDir > FIX16(0.02))
     {
         SPR_setAnim(carSprite.sprite, 1);
 				SPR_setHFlip(carSprite.sprite,1);
@@ -217,29 +216,29 @@ void updatePlayer() {
     }
 
     // Limit how far the car can move to the side
-    if (centerLine > FASTFIX16(323))
+    if (centerLine > FIX16(323))
     {
-        centerLine = FASTFIX16(323);
+        centerLine = FIX16(323);
     }
-    else if (centerLine < FASTFIX16(-4))
+    else if (centerLine < FIX16(-4))
     {
-        centerLine = FASTFIX16(-4);
+        centerLine = FIX16(-4);
     }
 
     // update angleOfRoad for perspective steering.
     //        fastfix32 step = FF32_div((centerLine - FASTFIX32(160)), // calc diff between center and position at front
     //                FASTFIX32(ZMAP_LENGTH));              // divide by the height of the road graphic. (DIV overflow with FF32)
     //
-    fastfix16 step = perspective_step_from_centerline[ FF16_toInt(centerLine) + 4 ];   //work around division overflow with LUT.
+    fix16 step = perspective_step_from_centerline[ F16_toInt(centerLine) + 4 ];   //work around division overflow with LUT.
 
-    fastfix16 current = FASTFIX16(0);
-    #pragma GCC unroll 80
-    for (int i = ZMAP_LENGTH-1; i >= 0; --i)// farthest has lowest offset.
+		
+    fix16 current = FASTFIX16(0);
+    //#pragma GCC unroll 80
+    for (u16 i =0; i < ZMAP_LENGTH; ++ i ) 
     {
         angleOfRoad[i] = current;
         current = current + step;
     }
-
 
 }
 
@@ -258,6 +257,7 @@ int main(bool arg)
     for (int i = 0; i < ZMAP_LENGTH; i++)
     {
         HscrollA[i] = SCROLL_CENTER_A;
+        angleOfRoad[i] = FASTFIX16( 0.000 );
     }
     for (int i = 0; i < VERTICAL_REZ; i++)
     {
