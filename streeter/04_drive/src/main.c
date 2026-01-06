@@ -72,7 +72,8 @@ void updateScrolling()
     #pragma GCC unroll 80
     for (u16 y = 0; y < ZMAP_LENGTH; y++ )
     {
-        HscrollA[y] = scroll_data[offset+y] + SCROLL_CENTER_A + F16_toInt( angleOfRoad[y] );  // TODO: can probably bake-in scroll center 
+        //HscrollA[y] = scroll_data[offset+y] + SCROLL_CENTER_A + F16_toInt( angleOfRoad[y] );  // TODO: can probably bake-in scroll center 
+        HscrollA[y] = scroll_data[offset+y] + F16_toInt( angleOfRoad[y] );  // SCROLL_CENTER_A is baked in by godot script
     }
 
     // scroll the background
