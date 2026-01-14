@@ -6,8 +6,8 @@
 #define ROAD_START_LINE 144 
 #define ZMAP_LENGTH 80 
 
-#define POS_DATA_LEN 399 
-const fastfix16 total_road_length = FASTFIX16( 19.999998 );
+#define POS_DATA_LEN 382 
+const fastfix16 total_road_length = FASTFIX16( 19.149948 );
 const fastfix16 data_step_size = FASTFIX16( 0.050000 );
 
 extern const s16 scroll_data[];

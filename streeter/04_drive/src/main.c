@@ -3,6 +3,7 @@
 
 #include "grass.h"
 #include "track.h"
+#include "track_map.h"
 
 
 #define VERTICAL_REZ 224  // number of lines in the screen.
@@ -47,6 +48,7 @@ s16 HscrollB[VERTICAL_REZ];
 
 // position variables.
 u16 pos = 0;
+u16 map_pos = 0;
 //fastfix16 position = FASTFIX16(0); // keep track fo the segment position onscreen
 fix16 background_position = FIX16(SCROLL_CENTER_B); // handle background X position
 
@@ -82,7 +84,7 @@ void updateScrolling()
 
     //#pragma unroll
     #pragma GCC unroll 20
-    for (u16 y = 0; y < SKY_HEIGHT; y++ )
+    for (u16 y = 40; y < SKY_HEIGHT; y++ )
     {
         HscrollB[y] = bgs;
     }
@@ -113,18 +115,18 @@ void updatePlayer() {
     // handle turning
     if (turning == 1)
     {
-        steeringDir = steeringDir + FIX16(0.6);
-        if (steeringDir > FIX16(20))
+        steeringDir = steeringDir + FIX16(0.3);
+        if (steeringDir > FIX16(16))
         {
-            steeringDir = FIX16(20);
+            steeringDir = FIX16(16);
         }
     }
     else if (turning == -1)
     {
-        steeringDir = steeringDir - FIX16(0.6);
-        if (steeringDir < FIX16(-20))
+        steeringDir = steeringDir - FIX16(0.3);
+        if (steeringDir < FIX16(-16))
         {
-            steeringDir = FIX16(-20);
+            steeringDir = FIX16(-16);
         }
     }
     else
@@ -132,7 +134,7 @@ void updatePlayer() {
         // pull back to center
         if (steeringDir < FIX16(0.0))
         {
-            steeringDir = steeringDir + FIX16(0.4);
+            steeringDir = steeringDir + FIX16(0.15);
             if (steeringDir > FIX16(0.0))
             {
                 steeringDir = FIX16(0.0);
@@ -140,7 +142,7 @@ void updatePlayer() {
         }
         else if (steeringDir > FIX16(0.0))
         {
-            steeringDir = steeringDir - FIX16(0.4);
+            steeringDir = steeringDir - FIX16(0.15);
             if (steeringDir < FIX16(0.0))
             {
                 steeringDir = FIX16(0.0);
@@ -150,16 +152,16 @@ void updatePlayer() {
 
 
     // set frame based on steeringDir as long as we're moving forward.
-		// LEFT
-    if (steeringDir < FIX16(-16.00))
+    // LEFT
+    if (steeringDir < FIX16(-12.00))
     {
         SPR_setAnim(carSprite.sprite, 3);
-				SPR_setHFlip(carSprite.sprite,0);
+        SPR_setHFlip(carSprite.sprite,0);
     }
-    else if (steeringDir < FIX16(-8.0))
+    else if (steeringDir < FIX16(-6.0))
     {
         SPR_setAnim(carSprite.sprite, 2);
-				SPR_setHFlip(carSprite.sprite,0);
+        SPR_setHFlip(carSprite.sprite,0);
     }
     else if (steeringDir < FIX16(-0.02))
     {
@@ -167,27 +169,27 @@ void updatePlayer() {
 				SPR_setHFlip(carSprite.sprite,0);
     }
 		// RIGHT
-    else if (steeringDir > FIX16(16.0))
+    else if (steeringDir > FIX16(12.0))
     {
         SPR_setAnim(carSprite.sprite, 3);
-				SPR_setHFlip(carSprite.sprite,1);
+        SPR_setHFlip(carSprite.sprite,1);
     }
-    else if (steeringDir > FIX16(8.0))
+    else if (steeringDir > FIX16(6.0))
     {
         SPR_setAnim(carSprite.sprite, 2);
-				SPR_setHFlip(carSprite.sprite,1);
-		}
+        SPR_setHFlip(carSprite.sprite,1);
+    }
     else if (steeringDir > FIX16(0.02))
     {
         SPR_setAnim(carSprite.sprite, 1);
-				SPR_setHFlip(carSprite.sprite,1);
-   
+        SPR_setHFlip(carSprite.sprite,1);
+
     }
     else
     {
         // centered
         SPR_setAnim(carSprite.sprite, 0);
-				SPR_setHFlip(carSprite.sprite,0);
+        SPR_setHFlip(carSprite.sprite,0);
     }
 
 
@@ -257,18 +259,26 @@ int main(bool arg)
         HscrollA[i] = SCROLL_CENTER_A;
         angleOfRoad[i] = FASTFIX16( 0.000 );
     }
-    for (int i = 0; i < VERTICAL_REZ; i++)
+    for (int i = 0; i < 40; i++)
+    {
+        HscrollB[i] = 0;
+    }
+    for (int i = 40; i < VERTICAL_REZ; i++)
     {
         HscrollB[i] = SCROLL_CENTER_B;
     }
 
 
 
+    //////////////////////////////////////////////////////////////////////
+    // setup palettes
+    PAL_setPalette( PAL0, road_images_pal.data, CPU );
+    PAL_setPalette( PAL1, car_pal.data, CPU);
+
 
 
     //////////////////////////////////////////////////////////////////////
     // setup road
-    PAL_setPalette( PAL0, road_images_pal.data, CPU );
     int ind = TILE_USER_INDEX;
     int roadIndex = ind;
     // Load the plane tiles into VRAM
@@ -287,7 +297,6 @@ int main(bool arg)
 
     //////////////////////////////////////////////////////////////////////
     // setup sky
-    PAL_setPalette( PAL1, dark_sky_pal.data, CPU );
     s16 skyIndex = roadIndex + road_images.tileset->numTile;
     VDP_drawImageEx(BG_B, &dark_sky, TILE_ATTR_FULL(PAL0, FALSE, FALSE, FALSE, skyIndex), 0, 0, FALSE, TRUE);
  
@@ -307,7 +316,7 @@ int main(bool arg)
     {
         // make a column out of it.
         VDP_fillTileMapRectInc(BG_B,
-                TILE_ATTR_FULL(PAL1,      // Palette
+                TILE_ATTR_FULL(PAL0,      // Palette
                     0,         // Priority
                     0,         // Flip Vertical
                     0,         // FLip Horizontal
@@ -329,14 +338,13 @@ int main(bool arg)
     //////////////////////////////////////////////////////////////
     // Setup Sprites
     SPR_init();
-    PAL_setPalette(PAL2, car_pal.data, CPU);
     carSprite.sprite = NULL;
     carSprite.pos_x = FIX16(132.0); 
     carSprite.pos_y = FIX16(186.0);
-    carSprite.sprite = SPR_addSprite(&car,                        // Sprite defined in resources
+    carSprite.sprite = SPR_addSprite(&car, // Sprite name defined in resources
             F16_toInt(carSprite.pos_x), // starting X position
             F16_toInt(carSprite.pos_y), // starting Y position
-            TILE_ATTR(PAL2,              // specify palette
+            TILE_ATTR(PAL1,              // specify palette
                 1,                 // Tile priority ( with background)
                 FALSE,             // flip the sprite vertically?
                 FALSE              // flip the sprite horizontally
@@ -344,6 +352,16 @@ int main(bool arg)
     SPR_setAnim(carSprite.sprite, 3);
     SPR_setHFlip(carSprite.sprite, 1);
 
+
+    Sprite *marker_sprite = SPR_addSprite(&markers,   // Sprite name defined in resources
+            -32, 
+            -32,
+            TILE_ATTR(PAL1,              // specify palette
+                1,                 // Tile priority ( with background)
+                FALSE,             // flip the sprite vertically?
+                FALSE              // flip the sprite horizontally
+                ));
+    SPR_setFrame(marker_sprite, 0);
 
     // set speed through z
     // speed = FASTFIX16(-0.1);
@@ -371,7 +389,7 @@ int main(bool arg)
                 DMA_QUEUE              // transfer method
                 );
         delay +=1;
-        if( delay > 1 ) {
+        if( delay > 2 ) {
             delay = 0;
             frame += 1;
             frame_offset += 10;
@@ -380,10 +398,13 @@ int main(bool arg)
                 frame = 0;
                 frame_offset = 0;
             }
+            pos++;
+            map_pos += 2;
+            SPR_setPosition(marker_sprite, map_path[ map_pos]-4, map_path[ map_pos+1]-4);
         }
-        pos++;
         if( pos >= POS_DATA_LEN ) {
             pos = 0;
+            map_pos = 0;
         }
 
 
