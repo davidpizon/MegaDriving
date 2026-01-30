@@ -435,8 +435,6 @@ func _export(path: String) -> void:
 		return
 	
 	var scroll_vals : Array =  compute_scroll(0)
-	
-	
 
 	var total_length : float  = scroll_vals[3]
 	var step_size : float = export_step_spin.value
@@ -492,7 +490,7 @@ func _export(path: String) -> void:
 		var hash_to_offset: Dictionary = Dictionary()
  
 		
-		src_file.store_string("const s16 scroll_data[] = {\n")
+		src_file.store_string("const s16 hscroll_offsets[] = {\n")
 		var array_offset: int = 0
 		for key in h_scroll_a_dict:
 			var scrollvals : ScrollValues = h_scroll_a_dict[key]
@@ -508,7 +506,7 @@ func _export(path: String) -> void:
 		src_file.store_string("};\n\n")
 	
 		# use hash to offset to make LUT for position to scroll values
-		src_file.store_string("const u16 pos_to_scroll_data_offset[] = {\n")
+		src_file.store_string("const u16 pos_to_hscroll_offsets_index[] = {\n")
 		for r in road_to_scroll_a_hash : 
 			src_file.store_string(" %d," % hash_to_offset[r] )
 		src_file.store_string("};\n\n")
@@ -531,12 +529,23 @@ func _export(path: String) -> void:
 		inc_file.store_string("#define ROAD_START_LINE %d \n" % [ road_start ] )
 		inc_file.store_string("#define ZMAP_LENGTH %d \n\n" % [ zmap_length ] ) 
 		
+		# data for getting track position to lookup positions
+		inc_file.store_string("// data for getting track position to lookup positions\n")
+		inc_file.store_string("// total positions used for lookups\n")
 		inc_file.store_string("#define POS_DATA_LEN %d \n" % [ total_steps ] ) 
+		inc_file.store_string("// total length of all segment lengths from track editor\n")
 		inc_file.store_string("const fastfix16 total_road_length = FASTFIX16( %f );\n" % [ total_road_length ] )
-		inc_file.store_string("const fastfix16 data_step_size = FASTFIX16( %f );\n\n" % [ step_size ] )
+		inc_file.store_string("//  step size used by script to calculate scrolling data along track\n")
+		inc_file.store_string("//  use with POS_DATA_LENGTH\n")
+		inc_file.store_string("const fastfix16 hscroll_data_step_size = FASTFIX16( %f );\n\n" % [ step_size ] )
 		
-		inc_file.store_string("extern const s16 scroll_data[];\n")
-		inc_file.store_string("extern const u16 pos_to_scroll_data_offset[];\n")
+		
+		inc_file.store_string("// horizontal scrolling offsets for use with \n")
+		inc_file.store_string("// VDP_setHorizontalScrollLine()\n")
+		inc_file.store_string("extern const s16 hscroll_offsets[];\n")
+		inc_file.store_string("// points to start of horizontal scrolling offsets \n")
+		inc_file.store_string("extern const u16 pos_to_hscroll_offsets_index[];\n")
+		inc_file.store_string("// rate of change for background for current position.\n")
 		inc_file.store_string("extern const fix16 pos_to_bg_dx[];\n\n")
 		inc_file.store_string("#endif // _%s_H_\n" % [ basename.to_upper() ] )
 		
