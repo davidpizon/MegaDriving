@@ -1,0 +1,256 @@
+[gd_scene load_steps=2 format=3 uid="uid://ia5g1bo8qkfx"]
+
+[ext_resource type="Script" uid="uid://dm686omeictux" path="res://Scripts/main.gd" id="1_jjgbg"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_jjgbg")
+
+[node name="HBoxContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="TrackLayoutVBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 2.72
+
+[node name="toolbar" type="BoxContainer" parent="HBoxContainer/TrackLayoutVBoxContainer"]
+layout_mode = 2
+
+[node name="btn_add" type="Button" parent="HBoxContainer/TrackLayoutVBoxContainer/toolbar"]
+layout_mode = 2
+tooltip_text = "Adds segment at end of track."
+text = "Add"
+
+[node name="btn_delete" type="Button" parent="HBoxContainer/TrackLayoutVBoxContainer/toolbar"]
+layout_mode = 2
+tooltip_text = "Deletes the LAST segment of track (not the selected segment)"
+text = "Delete"
+
+[node name="btn_close" type="Button" parent="HBoxContainer/TrackLayoutVBoxContainer/toolbar"]
+layout_mode = 2
+tooltip_text = "Adds a linear segment to connect the first and last segment."
+text = "Close Curve"
+
+[node name="label" type="Label" parent="HBoxContainer/TrackLayoutVBoxContainer/toolbar"]
+layout_mode = 2
+text = "Curve:"
+
+[node name="spin_curve" type="SpinBox" parent="HBoxContainer/TrackLayoutVBoxContainer/toolbar"]
+layout_mode = 2
+tooltip_text = "Bend the selected segment (degrees)"
+min_value = -270.0
+max_value = 270.0
+
+[node name="label2" type="Label" parent="HBoxContainer/TrackLayoutVBoxContainer/toolbar"]
+layout_mode = 2
+text = "Length:"
+
+[node name="spin_length" type="SpinBox" parent="HBoxContainer/TrackLayoutVBoxContainer/toolbar"]
+layout_mode = 2
+tooltip_text = "Adjust length of selected segment."
+min_value = 0.01
+max_value = 800.0
+step = 0.05
+value = 0.01
+
+[node name="label3" type="Label" parent="HBoxContainer/TrackLayoutVBoxContainer/toolbar"]
+layout_mode = 2
+text = "Zoom:"
+
+[node name="spin_zoom" type="SpinBox" parent="HBoxContainer/TrackLayoutVBoxContainer/toolbar"]
+layout_mode = 2
+min_value = 50.0
+max_value = 800.0
+step = 10.0
+value = 50.0
+
+[node name="btn_save" type="Button" parent="HBoxContainer/TrackLayoutVBoxContainer/toolbar"]
+layout_mode = 2
+tooltip_text = "Save the track segments in JSON format."
+text = "Save"
+
+[node name="btn_load" type="Button" parent="HBoxContainer/TrackLayoutVBoxContainer/toolbar"]
+layout_mode = 2
+tooltip_text = "Load track from file."
+text = "Load"
+
+[node name="btn_refresh" type="Button" parent="HBoxContainer/TrackLayoutVBoxContainer/toolbar"]
+visible = false
+layout_mode = 2
+tooltip_text = "Redraw Track"
+text = "Redraw"
+
+[node name="btn_reset" type="Button" parent="HBoxContainer/TrackLayoutVBoxContainer/toolbar"]
+layout_mode = 2
+tooltip_text = "Erases current track and resets values. CAUTION: Save your work!"
+text = "Reset"
+
+[node name="status_label" type="Label" parent="HBoxContainer/TrackLayoutVBoxContainer/toolbar"]
+layout_mode = 2
+
+[node name="TrackView" type="Control" parent="HBoxContainer/TrackLayoutVBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 8
+
+[node name="export_hbox" type="HBoxContainer" parent="HBoxContainer/TrackLayoutVBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 10
+
+[node name="btn_export" type="Button" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
+layout_mode = 2
+text = "Export"
+
+[node name="label2" type="Label" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
+layout_mode = 2
+text = "Step Size:"
+
+[node name="spin_export_step_size" type="SpinBox" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
+layout_mode = 2
+min_value = 0.001
+step = 0.001
+value = 0.001
+
+[node name="label3" type="Label" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
+layout_mode = 2
+text = "total: "
+
+[node name="lbl_export_count" type="Label" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
+layout_mode = 2
+
+[node name="label4" type="Label" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
+layout_mode = 2
+text = "Scroll Start A"
+
+[node name="spin_scroll_start_bg_a" type="SpinBox" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
+layout_mode = 2
+max_value = 144.0
+value = 100.0
+
+[node name="label5" type="Label" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
+layout_mode = 2
+text = " Scroll Start B"
+
+[node name="spin_scroll_start_bg_b" type="SpinBox" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
+layout_mode = 2
+max_value = 144.0
+value = 64.0
+
+[node name="btn_minimap" type="Button" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
+layout_mode = 2
+text = "Mini Map"
+
+[node name="RasterRoadVBoxContainer" type="VBoxContainer" parent="HBoxContainer"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="tex_rect_raster_road" type="TextureRect" parent="HBoxContainer/RasterRoadVBoxContainer"]
+layout_mode = 2
+
+[node name="lbl_dx" type="Label" parent="HBoxContainer/RasterRoadVBoxContainer"]
+layout_mode = 2
+
+[node name="spin_position" type="SpinBox" parent="HBoxContainer/RasterRoadVBoxContainer"]
+layout_mode = 2
+step = 0.05
+
+[node name="h_slid_position" type="HSlider" parent="HBoxContainer/RasterRoadVBoxContainer"]
+layout_mode = 2
+step = 0.05
+
+[node name="GridContainer" type="GridContainer" parent="HBoxContainer/RasterRoadVBoxContainer"]
+layout_mode = 2
+columns = 2
+
+[node name="Label2" type="Label" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+text = "screen_height:"
+
+[node name="lin_ed_screen_height" type="LineEdit" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+
+[node name="Label" type="Label" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+text = "screen_width:"
+
+[node name="lin_ed_screen_width" type="LineEdit" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+
+[node name="Label7" type="Label" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+text = "scroll_width:"
+
+[node name="lin_ed_scroll_width" type="LineEdit" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+
+[node name="Label4" type="Label" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Y_world:"
+
+[node name="lin_ed_y_world" type="LineEdit" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+
+[node name="Label3" type="Label" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+text = "zmap_length:"
+
+[node name="lin_ed_zmap_length" type="LineEdit" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+
+[node name="Label5" type="Label" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+text = "curve/dx scale:"
+
+[node name="line_ed_curve_dx_scale" type="LineEdit" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+
+[node name="Label6" type="Label" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+text = "curve/bgdx scale:"
+
+[node name="line_ed_curve_bgdx_scale" type="LineEdit" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+
+[node name="label" type="Label" parent="HBoxContainer/RasterRoadVBoxContainer"]
+layout_mode = 2
+text = "ZMap:"
+
+[node name="txt_ed_zmap" type="TextEdit" parent="HBoxContainer/RasterRoadVBoxContainer"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[connection signal="pressed" from="HBoxContainer/TrackLayoutVBoxContainer/toolbar/btn_add" to="." method="_on_btn_add_pressed"]
+[connection signal="pressed" from="HBoxContainer/TrackLayoutVBoxContainer/toolbar/btn_delete" to="." method="_on_btn_delete_pressed"]
+[connection signal="pressed" from="HBoxContainer/TrackLayoutVBoxContainer/toolbar/btn_close" to="." method="_on_btn_close_pressed"]
+[connection signal="value_changed" from="HBoxContainer/TrackLayoutVBoxContainer/toolbar/spin_curve" to="." method="_on_spin_curve_value_changed"]
+[connection signal="value_changed" from="HBoxContainer/TrackLayoutVBoxContainer/toolbar/spin_length" to="." method="_on_spin_length_value_changed"]
+[connection signal="value_changed" from="HBoxContainer/TrackLayoutVBoxContainer/toolbar/spin_zoom" to="." method="_on_spin_zoom_value_changed"]
+[connection signal="pressed" from="HBoxContainer/TrackLayoutVBoxContainer/toolbar/btn_save" to="." method="_on_btn_save_pressed"]
+[connection signal="pressed" from="HBoxContainer/TrackLayoutVBoxContainer/toolbar/btn_load" to="." method="_on_btn_load_pressed"]
+[connection signal="pressed" from="HBoxContainer/TrackLayoutVBoxContainer/toolbar/btn_refresh" to="." method="_on_btn_refresh_pressed"]
+[connection signal="pressed" from="HBoxContainer/TrackLayoutVBoxContainer/toolbar/btn_reset" to="." method="_on_btn_reset_pressed"]
+[connection signal="pressed" from="HBoxContainer/TrackLayoutVBoxContainer/export_hbox/btn_export" to="." method="_on_btn_export_pressed"]
+[connection signal="value_changed" from="HBoxContainer/TrackLayoutVBoxContainer/export_hbox/spin_export_step_size" to="." method="_on_spin_export_step_size_value_changed"]
+[connection signal="value_changed" from="HBoxContainer/TrackLayoutVBoxContainer/export_hbox/spin_scroll_start_bg_a" to="." method="_on_spin_export_step_size_value_changed"]
+[connection signal="value_changed" from="HBoxContainer/TrackLayoutVBoxContainer/export_hbox/spin_scroll_start_bg_b" to="." method="_on_spin_export_step_size_value_changed"]
+[connection signal="pressed" from="HBoxContainer/TrackLayoutVBoxContainer/export_hbox/btn_minimap" to="." method="_on_btn_minimap_pressed"]
+[connection signal="value_changed" from="HBoxContainer/RasterRoadVBoxContainer/spin_position" to="." method="_on_spin_position_value_changed"]
+[connection signal="drag_ended" from="HBoxContainer/RasterRoadVBoxContainer/h_slid_position" to="." method="_on_h_slid_position_drag_ended"]
+[connection signal="value_changed" from="HBoxContainer/RasterRoadVBoxContainer/h_slid_position" to="." method="_on_h_slid_position_value_changed"]
+[connection signal="text_changed" from="HBoxContainer/RasterRoadVBoxContainer/GridContainer/lin_ed_screen_height" to="." method="_on_lin_ed_screen_height_text_changed"]
+[connection signal="text_changed" from="HBoxContainer/RasterRoadVBoxContainer/GridContainer/lin_ed_screen_width" to="." method="_on_lin_ed_screen_width_text_changed"]
+[connection signal="text_changed" from="HBoxContainer/RasterRoadVBoxContainer/GridContainer/lin_ed_scroll_width" to="." method="_on_lin_ed_scroll_width_text_changed"]
+[connection signal="text_changed" from="HBoxContainer/RasterRoadVBoxContainer/GridContainer/lin_ed_y_world" to="." method="_on_lin_ed_y_world_text_changed"]
+[connection signal="text_changed" from="HBoxContainer/RasterRoadVBoxContainer/GridContainer/lin_ed_zmap_length" to="." method="_on_lin_ed_zmap_length_text_changed"]
+[connection signal="text_changed" from="HBoxContainer/RasterRoadVBoxContainer/GridContainer/line_ed_curve_dx_scale" to="." method="_on_line_ed_curve_dx_scale_text_changed"]
+[connection signal="text_changed" from="HBoxContainer/RasterRoadVBoxContainer/GridContainer/line_ed_curve_bgdx_scale" to="." method="_on_line_ed_curve_dx_scale_text_changed"]
