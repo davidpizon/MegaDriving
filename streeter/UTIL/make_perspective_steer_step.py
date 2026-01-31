@@ -40,7 +40,7 @@ def main( args, loglevel ):
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser( description = "Generates rotation arrays for SGDK.",
+    parser = argparse.ArgumentParser( description = "Generates perspective steering lookup.",
                                     epilog = "As an alternative to the commandline, params can be placed in a file, one per line, and specified on the commandline like '%(prog)s @params.conf'.",
                                     fromfile_prefix_chars = '@' )
     # TODO Specify your real parameters here.

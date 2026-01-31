@@ -41,8 +41,7 @@ def main(args, loglevel):
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser( 
-  description = "Create C array from PNG SGDK",
-  epilog = "As an alternative to the commandline, params can be placed in a file, one per line, and specified on the commandline like '%(prog)s @params.conf'.",
+  description = "Create C array from PNG",
   fromfile_prefix_chars = '@' )
   # parameter list
   parser.add_argument(
