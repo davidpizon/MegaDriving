@@ -39,9 +39,9 @@ def main(args, loglevel):
   street_filename = args.street_image
   output_filename = args.output_filename
   reps = args.reps
-  num_steps = args.steps
+  num_frames = args.frames
   move_lines = args.move_lines
-  step_size = args.move_lines / args.steps
+  frame_size = args.move_lines / args.frames
   logging.info("WORKING ON:" + street_filename );
   with Image.open( street_filename ) as street_img :
   
@@ -61,15 +61,15 @@ def main(args, loglevel):
     print( [(0, 0), (width, 0), (width, height), (0, height)] )
     print(  [(-2 + new_width/2, 0), (2 + new_width/2, 0), (new_width, new_height), (0, new_height)])
     offset = 0
-    for step in range(num_steps): 
+    for frame in range(num_frames): 
       coeffs = find_coeffs(
           [(-2 + new_width/2, 0), (2 + new_width/2, 0), (new_width, new_height), (0, new_height)],    # dest
           [(0, orig_height - offset), (width, orig_height- offset), (width, height-orig_height- offset), (0, height-orig_height- offset)],  # source
           )
       print( coeffs )
       new_img = street_work_img.transform((new_width, new_height), Image.PERSPECTIVE, coeffs, Image.NEAREST)
-      offset += step_size
-      new_img.save( output_filename + "_" + str(step) + "_" + street_filename )
+      offset += frame_size
+      new_img.save( output_filename + "_" + str(frame) + "_" + street_filename )
      
 
 
@@ -107,11 +107,11 @@ if __name__ == '__main__':
       metavar = "ARG") 
 
 
-  parser.add_argument( "-S",
-      "--steps",
+  parser.add_argument( "-f",
+      "--frames",
       default = 12,
       type=int,
-      help = "How many steps to move the image",
+      help = "How many frames to generate",
       metavar = "ARG") 
 
   parser.add_argument( "-m",
