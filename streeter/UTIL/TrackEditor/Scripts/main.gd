@@ -132,17 +132,28 @@ var _updating_control: bool = false
 @onready var y_world_line_edit : LineEdit = $HBoxContainer/RasterRoadVBoxContainer/GridContainer/lin_ed_y_world
 @onready var curve_dx_scale_line_edit : LineEdit = $HBoxContainer/RasterRoadVBoxContainer/GridContainer/line_ed_curve_dx_scale
 @onready var curve_bgdx_scale_line_edit : LineEdit = $HBoxContainer/RasterRoadVBoxContainer/GridContainer/line_ed_curve_bgdx_scale
+@onready var player_bottom_y_line_edit : LineEdit = $HBoxContainer/RasterRoadVBoxContainer/GridContainer/line_ed_player_bottom_y
+@onready var roadside_offset_line_edit : LineEdit = $HBoxContainer/RasterRoadVBoxContainer/GridContainer/line_ed_roadside_offset
+@onready var player_width_line_edit : LineEdit = $HBoxContainer/RasterRoadVBoxContainer/GridContainer/line_ed_player_width
+@onready var roadside_object_width_line_edit : LineEdit = $HBoxContainer/RasterRoadVBoxContainer/GridContainer/line_ed_roadside_object_width
+
+
+
 @onready var position_h_slider : HSlider = $HBoxContainer/RasterRoadVBoxContainer/h_slid_position 
 @onready var position_spin: SpinBox = $HBoxContainer/RasterRoadVBoxContainer/spin_position 
 @onready var zmap_text_edit : TextEdit = $HBoxContainer/RasterRoadVBoxContainer/txt_ed_zmap
 @onready var texture_rect : TextureRect = $HBoxContainer/RasterRoadVBoxContainer/tex_rect_raster_road
 @onready var dx_label : Label = $HBoxContainer/RasterRoadVBoxContainer/lbl_dx
+
+
+
 var zmap: PackedFloat32Array = PackedFloat32Array()
 
 @onready var export_step_spin : SpinBox = $HBoxContainer/TrackLayoutVBoxContainer/export_hbox/spin_export_step_size
+@onready var total_length_label : Label = $HBoxContainer/TrackLayoutVBoxContainer/export_hbox/lbl_total_length
 @onready var export_count_label : Label = $HBoxContainer/TrackLayoutVBoxContainer/export_hbox/lbl_export_count
-@onready var export_scroll_start_bg_a : SpinBox = $HBoxContainer/TrackLayoutVBoxContainer/export_hbox/spin_scroll_start_bg_a
-@onready var export_scroll_start_bg_b : SpinBox = $HBoxContainer/TrackLayoutVBoxContainer/export_hbox/spin_scroll_start_bg_b
+#@onready var export_scroll_start_bg_a : SpinBox = $HBoxContainer/TrackLayoutVBoxContainer/export_hbox/spin_scroll_start_bg_a
+#@onready var export_scroll_start_bg_b : SpinBox = $HBoxContainer/TrackLayoutVBoxContainer/export_hbox/spin_scroll_start_bg_b
 
 
 # Called when the node enters the scene tree for the first time.
@@ -155,7 +166,7 @@ func _ready() -> void:
 	var add_end = Vector2( 2,0)
 	var seg := Segment.new( add_start, add_end, 0.0 )
 	segments.append(seg)
-	
+	track_zoom = spin_zoom.value
 	set_process(true)
 	mouse_default_cursor_shape = Control.CURSOR_ARROW	
 	
@@ -179,8 +190,8 @@ func _ready() -> void:
 	position_h_slider.value = 0
 	position_spin.value = 0
 	export_step_spin.value = 0.05
-	export_scroll_start_bg_a.value = 100
-	export_scroll_start_bg_b.value = 64
+	#export_scroll_start_bg_a.value = 100
+	#export_scroll_start_bg_b.value = 64
 	
 	var image :Image = Image.create(int(screen_width_line_edit.text), int(screen_height_line_edit.text), false, Image.FORMAT_RGB8)
 	image.fill( Color8(0,0,128))
@@ -225,8 +236,8 @@ func _gui_input(event: InputEvent) -> void:
 				queue_redraw()
 			elif event.button_index == MOUSE_BUTTON_WHEEL_DOWN:
 				track_zoom -= 10.0
-				if track_zoom < 50.0:
-					track_zoom = 50
+				if track_zoom < spin_zoom.min_value:
+					track_zoom = spin_zoom.min_value
 				spin_zoom.value = track_zoom
 				queue_redraw()
 		else:
@@ -262,8 +273,12 @@ func _draw() ->void:
 			draw_circle(s.center* track_zoom + track_offset, 5.0, POINT_COLOR)
 			
 			
-			
-			
+	total_road_length = 0.0
+	for s in segments:
+		total_road_length += s.length
+		
+	total_length_label.text = "%.3f" % total_road_length 
+	export_count_label.text = "%d" % round( total_road_length / export_step_spin.value )		
 			
 
 func _create_file_dialogs() -> void:
@@ -975,8 +990,10 @@ func _export_map(path: String) -> void:
 func compute_raster_zmap() -> void:
 	# **`Z = Y_World  /( Y_screen -  (screen_height/2) )`**
 	#  `Y_world` is th edifference between the ground and camera height (and is negative)
-	var height = int(screen_height_line_edit.text)
-	var y_world = float(y_world_line_edit.text)
+	var height  :int= int(screen_height_line_edit.text)
+	var y_world : float = float(y_world_line_edit.text)
+	var player_y : float = float(player_bottom_y_line_edit.text)
+	
 	var zmap_length = int( z_map_length_line_edit.text )
 	if zmap_length < 1 or zmap_length > height:
 		return
@@ -985,10 +1002,29 @@ func compute_raster_zmap() -> void:
 	zmap_text_edit.clear()
 	var text : String = ""
 	for i in range( 0, zmap_length ) :
-		# var z = y_world / ( float( height - i) - float(height)/2.0) 
-		var z = y_world / ( float(  i) - float(height)/2.0) 
+		# the triangle
+		#   y_screen/dist = y_world/z_world    dist is dist to screen
+		#   y_screen = (y_world*dist)/z_world 
+		# Lou goes on and says dist=1  (arbitrary)
+		#   y_screen = (y_world)/z_world 
+		# **but this puts the center  of the view at the upper corner of the screen**
+		#
+		# to center on the display, shift  by half the resolution (y_resooution/2)
+		#
+		#     y_screen = (y_world)/z_world + ( y_resolution/2)
+		#     y_screen - ( y_resolution/2 ) = y_world/z_world
+		#     Z = Y_world / (Y_screen - (height_screen / 2))
+		#
+		#  In my particular case, screen center isn't really the 
+		#  center of the display, I want the vanishing point to be at the "top"
+		# of z so really  zmap length is my height/2.0
+		# var z = y_world / ( float(  i) - (float(height)/2.0) )  
+		var z : float = y_world / ( float(  i- zmap_length ) )
 		zmap.append( z )
-		zmap_text_edit.text  += "i: %d z %f\n" % [ i, z ]
+	
+	for i in range( 0, zmap_length ) : 
+		var base_z :float = height - player_y
+		zmap_text_edit.text  += "i: %d z %f  scale:%f \n" % [ i, zmap[i], zmap[base_z]/ zmap[i] ]
 
 
 func compute_scroll( scroll_pos : float) ->  Array:
@@ -1131,6 +1167,7 @@ func update_raster_road() -> void:
 		
 		
 	texture_rect.texture = ImageTexture.create_from_image(image)
+
 
 
 
@@ -1507,6 +1544,11 @@ func recompute_segments() -> void :
 	for seg in segments:
 		seg.write_out()
 		
+	total_length_label.text = str( total_road_length )
+	export_count_label.text = str( total_road_length / export_step_spin.value )
+	
+	
+	
 # params are custom class , so changes to next_seg will be kept
 func _recompute_curve_orientation( prev_seg :Segment, next_seg: Segment) -> Vector2:
 	## we know starting point is pt1

@@ -72,7 +72,7 @@ text = "Zoom:"
 
 [node name="spin_zoom" type="SpinBox" parent="HBoxContainer/TrackLayoutVBoxContainer/toolbar"]
 layout_mode = 2
-min_value = 50.0
+min_value = 10.0
 max_value = 800.0
 step = 10.0
 value = 50.0
@@ -113,9 +113,17 @@ size_flags_vertical = 10
 layout_mode = 2
 text = "Export"
 
-[node name="label2" type="Label" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
+[node name="labell" type="Label" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
 layout_mode = 2
-text = "Step Size:"
+text = "  total length:  "
+
+[node name="lbl_total_length" type="Label" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
+layout_mode = 2
+text = "    "
+
+[node name="label6" type="Label" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
+layout_mode = 2
+text = "  Step Size:"
 
 [node name="spin_export_step_size" type="SpinBox" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
 layout_mode = 2
@@ -125,25 +133,29 @@ value = 0.001
 
 [node name="label3" type="Label" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
 layout_mode = 2
-text = "total: "
+text = "  total steps:"
 
 [node name="lbl_export_count" type="Label" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
 layout_mode = 2
 
 [node name="label4" type="Label" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
+visible = false
 layout_mode = 2
 text = "Scroll Start A"
 
 [node name="spin_scroll_start_bg_a" type="SpinBox" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
+visible = false
 layout_mode = 2
 max_value = 144.0
 value = 100.0
 
 [node name="label5" type="Label" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
+visible = false
 layout_mode = 2
 text = " Scroll Start B"
 
 [node name="spin_scroll_start_bg_b" type="SpinBox" parent="HBoxContainer/TrackLayoutVBoxContainer/export_hbox"]
+visible = false
 layout_mode = 2
 max_value = 144.0
 value = 64.0
@@ -172,7 +184,7 @@ step = 0.05
 
 [node name="GridContainer" type="GridContainer" parent="HBoxContainer/RasterRoadVBoxContainer"]
 layout_mode = 2
-columns = 2
+columns = 4
 
 [node name="Label2" type="Label" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
 layout_mode = 2
@@ -190,7 +202,7 @@ layout_mode = 2
 
 [node name="Label7" type="Label" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
 layout_mode = 2
-text = "scroll_width:"
+text = "BG width:"
 
 [node name="lin_ed_scroll_width" type="LineEdit" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
 layout_mode = 2
@@ -222,6 +234,48 @@ text = "curve/bgdx scale:"
 
 [node name="line_ed_curve_bgdx_scale" type="LineEdit" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
 layout_mode = 2
+
+[node name="Label9" type="Label" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+
+[node name="Label8" type="Label" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+
+[node name="Label12" type="Label" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Player Width:"
+
+[node name="line_ed_player_width" type="LineEdit" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+tooltip_text = "Player sprite width in pixels"
+text = "56"
+
+[node name="Label11" type="Label" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Player Y:"
+
+[node name="line_ed_player_bottom_y" type="LineEdit" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+tooltip_text = "Y value of bottom of player sprite (in screen pixels). Affects sprite scaling lookup."
+text = "218"
+
+[node name="Label10" type="Label" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Roadside Offset:"
+
+[node name="line_ed_roadside_offset" type="LineEdit" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+tooltip_text = "Distance of roadside object centers from road at player Y/row"
+text = "28"
+
+[node name="Label13" type="Label" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+text = "Roaside Obj Width:"
+
+[node name="line_ed_roadside_object_width" type="LineEdit" parent="HBoxContainer/RasterRoadVBoxContainer/GridContainer"]
+layout_mode = 2
+tooltip_text = "Width of typical roadside object sprites. Sprites that don't match this will need to be adjusted at runtime."
+text = "40"
 
 [node name="label" type="Label" parent="HBoxContainer/RasterRoadVBoxContainer"]
 layout_mode = 2
