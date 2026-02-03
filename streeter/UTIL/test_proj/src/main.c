@@ -13,7 +13,6 @@
 // OTOH back ground B is 512 wide  (512-320)/2 = -96
 #define SCROLL_CENTER_B -96
 
-fastfix16 zmap[ZMAP_LENGTH];
 
 #define SKY_HEIGHT 144
 
@@ -339,6 +338,16 @@ int main(bool arg)
     //////////////////////////////////////////////////////////////
     // Setup Sprites
     SPR_init();
+    // for just testing.
+    Sprite *powerSprite = SPR_addSprite( &sparkle,
+            F16_toInt(carSprite.pos_x)+4, // starting X position
+            F16_toInt(carSprite.pos_y)-8, // starting Y position
+            TILE_ATTR(PAL2,              // specify palette
+                1,                 // Tile priority ( with background)
+                FALSE,             // flip the sprite vertically?
+                FALSE              // flip the sprite horizontally
+                ));
+
     carSprite.sprite = NULL;
     carSprite.pos_x = FIX16(132.0); 
     carSprite.pos_y = FIX16(186.0);
@@ -352,7 +361,6 @@ int main(bool arg)
                 ));
     SPR_setAnim(carSprite.sprite, 3);
     SPR_setHFlip(carSprite.sprite, 1);
-
 
     Sprite *marker_sprite = SPR_addSprite(&markers,   // Sprite name defined in resources
             -32, 
@@ -411,6 +419,7 @@ int main(bool arg)
 
         // Draw car at now position
         SPR_setPosition(carSprite.sprite, F16_toInt(carSprite.pos_x), F16_toInt(carSprite.pos_y));
+        SPR_setPosition(powerSprite, F16_toInt(carSprite.pos_x)+4, F16_toInt(carSprite.pos_y)-8);
         SPR_update();
 
 

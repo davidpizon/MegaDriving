@@ -450,6 +450,9 @@ func _export(path: String) -> void:
 	var width = int(screen_width_line_edit.text)
 	var scroll_width = int(scroll_width_line_edit.text)
 	var height = int(screen_height_line_edit.text)
+	
+	var player_y : float = float(player_bottom_y_line_edit.text)	
+	
 	var zmap_length = int( z_map_length_line_edit.text )
 	if zmap_length < 1 or zmap_length > height:
 		return
@@ -538,8 +541,18 @@ func _export(path: String) -> void:
 			src_file.store_string(" FIX16( %0.3f )," % bgdx )
 		src_file.store_string("};\n\n")
 		
- 
-	
+		src_file.store_string("const fastfix16 zmap[] = {\n")
+		for i in range( 0, zmap_length ) : 
+			src_file.store_string("  FASTFIX16( %0.3f )," % zmap[i])
+		src_file.store_string("};\n\n")
+			
+		var base_z :float = height - player_y
+		src_file.store_string("const fastfix16 scale_for_y[] = {\n")
+		for i in range( 0, zmap_length ) : 
+			src_file.store_string("  FASTFIX16( %0.3f )," % ( zmap[base_z]/ zmap[i] ) )
+		src_file.store_string("};\n\n")
+			
+		
 	var inc_file = FileAccess.open( header_path, FileAccess.WRITE )
 	if inc_file.is_open():
 		inc_file.store_string("#ifndef _%s_H_\n" % [ basename.to_upper() ] )
@@ -567,6 +580,11 @@ func _export(path: String) -> void:
 		inc_file.store_string("extern const u16 pos_to_hscroll_offsets_index[];\n")
 		inc_file.store_string("// rate of change for background for current position.\n")
 		inc_file.store_string("extern const fix16 pos_to_bg_dx[];\n\n")
+		
+		inc_file.store_string("// zmap \n")
+		inc_file.store_string("extern const fastfix16 zmap[ZMAP_LENGTH];\n")
+		inc_file.store_string("// scale values for rows/Ys \n")
+		inc_file.store_string("extern const fastfix16 scale_for_y[ZMAP_LENGTH];\n\n")
 		inc_file.store_string("#endif // _%s_H_\n" % [ basename.to_upper() ] )
 		
 	 
