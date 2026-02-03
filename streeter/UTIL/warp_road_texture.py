@@ -46,17 +46,22 @@ def main(args, loglevel):
   with Image.open( street_filename ) as street_img :
   
     orig_width, orig_height = street_img.size 
+    orig_pal = street_img.getpalette()
  
-    street_work_img = Image.new('RGB', (street_img.width,  reps * street_img.height ))
+    street_work_img = Image.new('P', (street_img.width,  reps * street_img.height ))
+    street_work_img.putpalette( orig_pal )
     for r in range(reps + 1):
         street_work_img.paste(street_img, (0,  r * street_img.height))  
   
+
     width, height = street_work_img.size 
     print(f'width: {width} height: {height}')
     street_work_img.save( "work.png")
 
     new_width = 2 * width
     new_height = ROAD_HEIGHT
+    combo_img = Image.new('P', (512,  num_frames * new_height ))
+    combo_img.putpalette( orig_pal )
     print(f' new width: {new_width} new height: {new_height}')
     print( [(0, 0), (width, 0), (width, height), (0, height)] )
     print(  [(-2 + new_width/2, 0), (2 + new_width/2, 0), (new_width, new_height), (0, new_height)])
@@ -70,8 +75,9 @@ def main(args, loglevel):
       new_img = street_work_img.transform((new_width, new_height), Image.PERSPECTIVE, coeffs, Image.NEAREST)
       offset += frame_size
       new_img.save( output_filename + "_" + str(frame) + "_" + street_filename )
-     
+      combo_img.paste( new_img, ( 256 - width, frame * new_height ) )
 
+    combo_img.save( output_filename + "_combo_"+ str(num_frames) + "_" + street_filename )
 
 
 

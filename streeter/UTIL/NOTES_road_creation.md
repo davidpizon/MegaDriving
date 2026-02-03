@@ -2,7 +2,9 @@
 `warp.py`
 
 ```bash
-python3 warp_road_texture.py  -s road2_160x128.png -o road2.png -r 24 -F 6 -m 64
+python3 warp_road_texture.py  -s road2_160x128.png -o road2_4.png -r 48 -f 4 -m 64
+python3 warp_road_texture.py  -s road2_160x128.png -o road2_5.png -r 48 -f 5 -m 64
+python3 warp_road_texture.py  -s road2_160x128.png -o road2_6.png -r 48 -f 6 -m 64
 ```
 `-F` frames to generate
 `-m` how far to move the road image while generating frames. SHould be the height of 
@@ -24,9 +26,9 @@ edit the image before using it in a program.
 # Create Grass Image
 converts grass patterns into C arrays for cycling.
 ```bash
- python3 tile_image_to_c.py  -i grass_4.png -o grass_5.c -n grass
+ python3 tile_image_to_c.py  -i grass_4.png -o grass_4.c -n grass
  python3 tile_image_to_c.py  -i grass_5.png -o grass_5.c -n grass
- python3 tile_image_to_c.py  -i grass_5.png -o grass_4.c -n grass
+ python3 tile_image_to_c.py  -i grass_6.png -o grass_6.c -n grass
 ```
 
 can be used like this (YMMV):

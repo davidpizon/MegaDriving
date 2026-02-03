@@ -75,7 +75,7 @@ layout_mode = 2
 min_value = 10.0
 max_value = 800.0
 step = 10.0
-value = 50.0
+value = 20.0
 
 [node name="btn_save" type="Button" parent="HBoxContainer/TrackLayoutVBoxContainer/toolbar"]
 layout_mode = 2
@@ -101,9 +101,15 @@ text = "Reset"
 [node name="status_label" type="Label" parent="HBoxContainer/TrackLayoutVBoxContainer/toolbar"]
 layout_mode = 2
 
+[node name="btn_scale" type="Button" parent="HBoxContainer/TrackLayoutVBoxContainer/toolbar"]
+layout_mode = 2
+
 [node name="TrackView" type="Control" parent="HBoxContainer/TrackLayoutVBoxContainer"]
 layout_mode = 2
 size_flags_vertical = 8
+
+[node name="lbl_track_name" type="Label" parent="HBoxContainer/TrackLayoutVBoxContainer"]
+layout_mode = 2
 
 [node name="export_hbox" type="HBoxContainer" parent="HBoxContainer/TrackLayoutVBoxContainer"]
 layout_mode = 2
@@ -295,6 +301,7 @@ size_flags_vertical = 3
 [connection signal="pressed" from="HBoxContainer/TrackLayoutVBoxContainer/toolbar/btn_load" to="." method="_on_btn_load_pressed"]
 [connection signal="pressed" from="HBoxContainer/TrackLayoutVBoxContainer/toolbar/btn_refresh" to="." method="_on_btn_refresh_pressed"]
 [connection signal="pressed" from="HBoxContainer/TrackLayoutVBoxContainer/toolbar/btn_reset" to="." method="_on_btn_reset_pressed"]
+[connection signal="pressed" from="HBoxContainer/TrackLayoutVBoxContainer/toolbar/btn_scale" to="." method="_on_btn_scale_pressed"]
 [connection signal="pressed" from="HBoxContainer/TrackLayoutVBoxContainer/export_hbox/btn_export" to="." method="_on_btn_export_pressed"]
 [connection signal="value_changed" from="HBoxContainer/TrackLayoutVBoxContainer/export_hbox/spin_export_step_size" to="." method="_on_spin_export_step_size_value_changed"]
 [connection signal="value_changed" from="HBoxContainer/TrackLayoutVBoxContainer/export_hbox/spin_scroll_start_bg_a" to="." method="_on_spin_export_step_size_value_changed"]

@@ -12,6 +12,9 @@ var fd_map: FileDialog
 @onready var spin_length : SpinBox = $HBoxContainer/TrackLayoutVBoxContainer/toolbar/spin_length
 @onready var spin_zoom : SpinBox = $HBoxContainer/TrackLayoutVBoxContainer/toolbar/spin_zoom
 
+
+@onready var track_name : Label = $HBoxContainer/TrackLayoutVBoxContainer/lbl_track_name
+
 # Appearance
 const GRID := 32
 const GRID_MINOR_COLOR := Color(0.23, 0.23, 0.23)
@@ -115,7 +118,7 @@ var background_points: Array[Vector2] = []
 
 var selected_index := -1
 
-static var track_zoom: float = 50.0
+static var track_zoom: float
 static var track_offset: Vector2 = Vector2( 600, 400 )
 static var track_dragging : bool = false
 static var track_drag_last_pt : Vector2
@@ -163,7 +166,7 @@ func _ready() -> void:
 	#add_start = Vector2(600,400)
 	#var add_end = Vector2( 500,400)
 	add_start = Vector2(0,0)
-	var add_end = Vector2( 2,0)
+	var add_end = Vector2( 6,0)
 	var seg := Segment.new( add_start, add_end, 0.0 )
 	segments.append(seg)
 	track_zoom = spin_zoom.value
@@ -182,20 +185,21 @@ func _ready() -> void:
 		background_points.append(pt)
 	
 	z_map_length_line_edit.text = "80"
-	y_world_line_edit.text = "-75" 
+	y_world_line_edit.text = "-15" 
 	curve_dx_scale_line_edit.text = "0.0005"
 	curve_bgdx_scale_line_edit.text = "0.008"
 	position_h_slider.min_value = 0
 	position_h_slider.max_value = 100
 	position_h_slider.value = 0
 	position_spin.value = 0
-	export_step_spin.value = 0.05
+	export_step_spin.value = 0.15
 	#export_scroll_start_bg_a.value = 100
 	#export_scroll_start_bg_b.value = 64
 	
 	var image :Image = Image.create(int(screen_width_line_edit.text), int(screen_height_line_edit.text), false, Image.FORMAT_RGB8)
 	image.fill( Color8(0,0,128))
 	texture_rect.texture = ImageTexture.create_from_image(image)
+	track_name.text = ""
 	compute_raster_zmap()
 	update_raster_road()
 		
@@ -407,6 +411,7 @@ func _open_json_path(path: String) -> void:
 	print("open at %s" % path)
 	var file = FileAccess.open( path, FileAccess.READ )
 	if file.is_open():
+		track_name.text = path
 		var tmp_string = file.get_as_text()
 		var json = JSON.new()
 		var err = json.parse( tmp_string )
@@ -1057,7 +1062,7 @@ func compute_scroll( scroll_pos : float) ->  Array:
 			
 
 	
-	export_count_label.text = str( total_road_length / export_step_spin.value )
+	export_count_label.text = "%d" % ( total_road_length / export_step_spin.value )
 	
 	# get scale factor for curve/angle
 	var curve_dx_scale : float = float(curve_dx_scale_line_edit.text)
@@ -1422,6 +1427,7 @@ func _on_btn_export_pressed() -> void:
 
 
 func _on_btn_save_pressed() -> void:
+	fd_save.current_path = track_name.text
 	fd_save.popup_centered_ratio(0.75)
 
 
@@ -1430,7 +1436,7 @@ func _on_btn_load_pressed() -> void:
 
 
 func _on_spin_export_step_size_value_changed(value: float) -> void:
-	export_count_label.text = str( total_road_length / value )
+	export_count_label.text = "%d" % ( total_road_length / value )
 
 
 func _on_btn_close_pressed() -> void:
@@ -1545,7 +1551,7 @@ func recompute_segments() -> void :
 		seg.write_out()
 		
 	total_length_label.text = str( total_road_length )
-	export_count_label.text = str( total_road_length / export_step_spin.value )
+	export_count_label.text = "%d" % ( total_road_length / export_step_spin.value )
 	
 	
 	
@@ -1638,7 +1644,7 @@ func _on_btn_reset_pressed() -> void:
 	# connect signals
 	dialog.canceled.connect (dialog_canceled)
 	dialog.confirmed.connect (dialog_confirmed)
-		
+	
 	# show dialog
 	add_child(dialog)	
 	dialog.popup_centered() # center on screen
@@ -1653,16 +1659,23 @@ func dialog_confirmed():
 	segments.clear()
 	# add initial segment
 	add_start = Vector2(0,0)
-	var add_end = Vector2( 2,0)
+	var add_end = Vector2( 6,0)
 	var seg := Segment.new( add_start, add_end, 0.0 )
 	segments.append(seg)
-	track_zoom = 50.0
+	track_zoom = 15.0
 	spin_zoom.value = track_zoom
 	track_offset = Vector2( 600, 400 )
+	track_name.text = ""
 	# redraw
 	queue_redraw()	
 
 
 func _on_spin_zoom_value_changed(value: float) -> void:
 	track_zoom = spin_zoom.value
+	queue_redraw()
+
+
+func _on_btn_scale_pressed() -> void:
+	for segment in segments:
+		segment.length *= 3.0
 	queue_redraw()
