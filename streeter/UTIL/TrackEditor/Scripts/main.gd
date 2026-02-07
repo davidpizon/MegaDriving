@@ -546,7 +546,7 @@ func _export(path: String) -> void:
 			src_file.store_string("  FASTFIX16( %0.3f )," % zmap[i])
 		src_file.store_string("};\n\n")
 			
-		var base_z :float = height - player_y
+		var base_z :int = round ( height - player_y )
 		src_file.store_string("const fastfix16 scale_for_y[] = {\n")
 		for i in range( 0, zmap_length ) : 
 			src_file.store_string("  FASTFIX16( %0.3f )," % ( zmap[base_z]/ zmap[i] ) )
@@ -1045,8 +1045,8 @@ func compute_raster_zmap() -> void:
 		var z : float = y_world / ( float(  i- zmap_length ) )
 		zmap.append( z )
 	
+	var base_z : int = round(height - player_y)
 	for i in range( 0, zmap_length ) : 
-		var base_z :float = height - player_y
 		zmap_text_edit.text  += "i: %d z %f  scale:%f \n" % [ i, zmap[i], zmap[base_z]/ zmap[i] ]
 
 
