@@ -7,7 +7,7 @@
 
 
 
-* Generate Lanes for  roadside object and cars behavior.
+* Generate Lanes for roadside objectr?
   * Recall scrolling use `SCROLL_CENTER` (for total image width) plus the calcualted X
 ```c
     // image is 512x224.  Screen is 320, we want to move halfway
@@ -44,7 +44,11 @@
         KLog_F2(" i: ", FIX32(i), "  road offset: ", roadOffsetRight[i]);
     }
 ```
-  * 50% (middle) then +/- 16.66 and +/-33.33 for 5 lanes? too much? maybe just 3 lanes?
+  * 50% (middle) then +/- 16.66 and +/-33.33 for 5 lanes? Probably not. AI can 
+    just just be relative to imaginary track width and look at curvature
+    of upcoming segment to determine internal switch. Actuall position for 
+    rendering will need to be computed anyway.
+
 
 * Generate `zmap` 
 * Generate `y_to_scale` (for sprite sizing)
@@ -57,15 +61,16 @@
 
 
 
-* add road-side objects
+* add road-side object to editor
   * place along segments? label segment as a type and 
     have game generate them?
 
-* Output DX per segment 
+* Output DX per segment for editor
 
-* Reduce number generated LUTs by
+* Reduce number generated LUTs by editor 
   * eliminating ones that look basically the same (by what criteria???, total pixels off? max pixel deviation?)
   * limit some of the freedom for segment curve/lenght ( probably a good idea for 8-bit support )
+
 
 * 8-Bit computer export files ( Atari800/XL/XE, Commodore 64 )
 

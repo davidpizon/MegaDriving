@@ -7,6 +7,7 @@ find . -name main.c -exec sed -i 's/fix32Div/F32_div/g'  {} +
 find . -name main.c -exec sed -i 's/fix16Div/F16_div/g'  {} +
 find . -name main.c -exec sed -i 's/fix32ToInt/F32_toInt/g'  {} +
 find . -name main.c -exec sed -i 's/fix16ToInt/F16_toInt/g'  {} +
+find . -name main.c -exec sed -i 's/VSCROLL_2TILE/VSCROLL_COLUMN/g'  {} +
 ```
 
 This repository contains *experimental* code I've written for fake 3D roads and other 

@@ -53,16 +53,37 @@ fix16 background_position = FIX16(SCROLL_CENTER_B); // handle background X posit
 
 
 // Sprites
-struct CP_SPRITE
+struct P_SPRITE  // player sprite
 {
   Sprite *sprite;
   fix16 pos_x;
   fix16 pos_y;
-  fix16 zpos; // track position along the road. start it at the farthest on background - 12.5
+  fix16 pos_z; // track position along the road. start it at the farthest on background 
+};
+struct P_SPRITE carSprite1;
+struct P_SPRITE carSprite2;
+
+
+// roadside objects
+
+struct O_SPRITE  // obj sprite
+{
+  Sprite *sprite;
+  fix16 pos_x;
+  fix16 pos_y;
+  //fix16 pos_z; // track position along the road. start it at the farthest on background - 12.5
+  fix16 dist;  // distance from player 
+  s16 curr_z_index; //  
+  s16 half_width; // for positioning on-screen
+  s16 height;    // for positioning on-screen
+  
   u8 update_y;
 };
-struct CP_SPRITE carSprite;
+#define NUM_OBJS 8
+struct O_SPRITE obj_sprites[ NUM_OBJS ];
 
+s16 roadOffsetRight[ ZMAP_LENGTH ];
+s16 roadOffsetLeft[ ZMAP_LENGTH ];
 
 void updateScrolling()
 {
@@ -154,41 +175,41 @@ void updatePlayer() {
     // LEFT
     if (steeringDir < FIX16(-12.00))
     {
-        SPR_setAnim(carSprite.sprite, 3);
-        SPR_setHFlip(carSprite.sprite,0);
+        SPR_setAnim(carSprite1.sprite, 3);
+        SPR_setHFlip(carSprite1.sprite,0);
     }
     else if (steeringDir < FIX16(-6.0))
     {
-        SPR_setAnim(carSprite.sprite, 2);
-        SPR_setHFlip(carSprite.sprite,0);
+        SPR_setAnim(carSprite1.sprite, 2);
+        SPR_setHFlip(carSprite1.sprite,0);
     }
     else if (steeringDir < FIX16(-0.02))
     {
-        SPR_setAnim(carSprite.sprite, 1);
-				SPR_setHFlip(carSprite.sprite,0);
+        SPR_setAnim(carSprite1.sprite, 1);
+				SPR_setHFlip(carSprite1.sprite,0);
     }
 		// RIGHT
     else if (steeringDir > FIX16(12.0))
     {
-        SPR_setAnim(carSprite.sprite, 3);
-        SPR_setHFlip(carSprite.sprite,1);
+        SPR_setAnim(carSprite1.sprite, 3);
+        SPR_setHFlip(carSprite1.sprite,1);
     }
     else if (steeringDir > FIX16(6.0))
     {
-        SPR_setAnim(carSprite.sprite, 2);
-        SPR_setHFlip(carSprite.sprite,1);
+        SPR_setAnim(carSprite1.sprite, 2);
+        SPR_setHFlip(carSprite1.sprite,1);
     }
     else if (steeringDir > FIX16(0.02))
     {
-        SPR_setAnim(carSprite.sprite, 1);
-        SPR_setHFlip(carSprite.sprite,1);
+        SPR_setAnim(carSprite1.sprite, 1);
+        SPR_setHFlip(carSprite1.sprite,1);
 
     }
     else
     {
         // centered
-        SPR_setAnim(carSprite.sprite, 0);
-        SPR_setHFlip(carSprite.sprite,0);
+        SPR_setAnim(carSprite1.sprite, 0);
+        SPR_setHFlip(carSprite1.sprite,0);
     }
 
 
@@ -230,7 +251,7 @@ void updatePlayer() {
 				//
 				fix16 step = perspective_step_from_centerline[ F16_toInt(centerLine) + 4 ];   //work around division overflow with LUT.
 
-				fix16 current = FASTFIX16(0);
+				fix16 current = FIX16(0);
 				#pragma GCC unroll 80
 				for (u16 i =0; i < ZMAP_LENGTH; ++i ) 
 				{
@@ -240,9 +261,61 @@ void updatePlayer() {
 		}
 
 }
+void createRoadSideObjects() {
+    // get max Z 
+    fastfix16 zmax = zmap[ ZMAP_LENGTH - 1 ];  
+
+    // spread accross Z
+    fastfix16 objs_per_side = FASTFIX16(NUM_OBJS/2);
+    fastfix16 zstep = zmax /  objs_per_side;
+
+    u8 sprite_type = 0;
+    for( u16 i=0; i < NUM_OBJS; ++i ) {
+        // create sprite  0-rock, 1-bush, 2-tree 
+          
+        // figure out position  based on Z/distance from player  and zmap
+
+       
+    }    
+
+
+
+}
+
+void updateRoadSideObjects() {
+    for( u16 i=0; i < NUM_OBJS; ++i ) {
+        // decrease distance based on speed
+
+        // using last Z index for current sprite to check distances 
+
+        // if zmap[] > 
+    
+    }
+}
 
 int main(bool arg)
 {
+
+    //////////////////////////////////////////////////////////////
+    // Precompute road offsets for roadside sprites
+    // sprite widths (bush, rock, tree) are 40 pixels at max size.
+    //  * middle is 20 away from left/right sides.
+    //  * pad another 16 at bottom? so 
+    //    range is  0-20-16  to 320 + 20 + 16
+    //               -36 to 356
+    //   center is 160 so difference either way is |196|
+    // 
+    // step size 196/ZMAP_LEN ~ 196/80  2.45
+    fix16 rightFromCenter = FIX16(160.0); // obj widths are 40, half is 20
+    fix16 leftFromCenter = FIX16(160.0);  // tree width is 56 ..   half of 56 is 28
+    fix16 step = FIX16(2.45);
+    for (s16 i = 0; i <  ZMAP_LENGTH; i++ )
+    {
+        roadOffsetRight[i] = F16_toInt( rightFromCenter );
+        rightFromCenter = rightFromCenter + step;
+        roadOffsetLeft[i] = F16_toInt( leftFromCenter );
+        leftFromCenter = leftFromCenter - step;
+    }
 
 
     //////////////////////////////////////////////////////////////
@@ -256,7 +329,7 @@ int main(bool arg)
     for (int i = 0; i < ZMAP_LENGTH; i++)
     {
         HscrollA[i] = SCROLL_CENTER_A;
-        angleOfRoad[i] = FASTFIX16( 0.000 );
+        angleOfRoad[i] = FIX16( 0.000 );
     }
     for (int i = 0; i < 40; i++)
     {
@@ -269,11 +342,14 @@ int main(bool arg)
 
 
 
+
+
     //////////////////////////////////////////////////////////////////////
     // setup palettes
     PAL_setPalette( PAL0, road_images_pal.data, CPU );
     PAL_setPalette( PAL1, car_pal.data, CPU);
     PAL_setPalette( PAL2, power_pal.data, CPU);
+    PAL_setPalette( PAL3, obj_pal.data, CPU);
 
 
 
@@ -339,28 +415,52 @@ int main(bool arg)
     // Setup Sprites
     SPR_init();
     // for just testing.
-    Sprite *powerSprite = SPR_addSprite( &sparkle,
-            F16_toInt(carSprite.pos_x)+4, // starting X position
-            F16_toInt(carSprite.pos_y)-8, // starting Y position
+    carSprite1.sprite = NULL;
+    carSprite1.pos_x = FIX16(132.0); 
+    carSprite1.pos_y = FIX16(186.0);
+    Sprite *powerSprite1 = SPR_addSprite( &sparkle,
+            F16_toInt(carSprite1.pos_x)+4, // starting X position
+            F16_toInt(carSprite1.pos_y)-8, // starting Y position
             TILE_ATTR(PAL2,              // specify palette
                 1,                 // Tile priority ( with background)
                 FALSE,             // flip the sprite vertically?
                 FALSE              // flip the sprite horizontally
                 ));
 
-    carSprite.sprite = NULL;
-    carSprite.pos_x = FIX16(132.0); 
-    carSprite.pos_y = FIX16(186.0);
-    carSprite.sprite = SPR_addSprite(&car, // Sprite name defined in resources
-            F16_toInt(carSprite.pos_x), // starting X position
-            F16_toInt(carSprite.pos_y), // starting Y position
+    carSprite1.sprite = SPR_addSprite(&car, // Sprite name defined in resources
+            F16_toInt(carSprite1.pos_x), // starting X position
+            F16_toInt(carSprite1.pos_y), // starting Y position
             TILE_ATTR(PAL1,              // specify palette
                 1,                 // Tile priority ( with background)
                 FALSE,             // flip the sprite vertically?
                 FALSE              // flip the sprite horizontally
                 ));
-    SPR_setAnim(carSprite.sprite, 3);
-    SPR_setHFlip(carSprite.sprite, 1);
+    SPR_setAnim(carSprite1.sprite, 3);
+    SPR_setHFlip(carSprite1.sprite, 1);
+
+    carSprite2.sprite = NULL;
+    carSprite2.pos_x = FIX16(76.0); 
+    carSprite2.pos_y = FIX16(186.0);
+    Sprite *powerSprite2 = SPR_addSprite( &shield,
+            F16_toInt(carSprite2.pos_x)+4, // starting X position
+            F16_toInt(carSprite2.pos_y)-4, // starting Y position
+            TILE_ATTR(PAL2,              // specify palette
+                1,                 // Tile priority ( with background)
+                FALSE,             // flip the sprite vertically?
+                FALSE              // flip the sprite horizontally
+                ));
+
+    carSprite2.sprite = SPR_addSprite(&miles, // Sprite name defined in resources
+            F16_toInt(carSprite2.pos_x), // starting X position
+            F16_toInt(carSprite2.pos_y), // starting Y position
+            TILE_ATTR(PAL1,              // specify palette
+                1,                 // Tile priority ( with background)
+                FALSE,             // flip the sprite vertically?
+                FALSE              // flip the sprite horizontally
+                ));
+    SPR_setAnim(carSprite2.sprite, 0);
+    SPR_setHFlip(carSprite2.sprite, 1);
+
 
     Sprite *marker_sprite = SPR_addSprite(&markers,   // Sprite name defined in resources
             -32, 
@@ -418,8 +518,8 @@ int main(bool arg)
 
 
         // Draw car at now position
-        SPR_setPosition(carSprite.sprite, F16_toInt(carSprite.pos_x), F16_toInt(carSprite.pos_y));
-        SPR_setPosition(powerSprite, F16_toInt(carSprite.pos_x)+4, F16_toInt(carSprite.pos_y)-8);
+        SPR_setPosition(carSprite1.sprite, F16_toInt(carSprite1.pos_x), F16_toInt(carSprite1.pos_y));
+        SPR_setPosition(powerSprite1, F16_toInt(carSprite1.pos_x)+4, F16_toInt(carSprite1.pos_y)-8);
         SPR_update();
 
 
