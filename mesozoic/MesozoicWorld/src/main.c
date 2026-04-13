@@ -211,6 +211,8 @@ int main(bool arg)
     u16 palette1[9]; 
     memcpy(&palette1[0], bg_b_pal.data, 18 );
     palette1[0] = palette1[1];
+
+    // other palett
     PAL_setPalette( PAL2, blackout_pal.data, CPU);
     PAL_setPalette( PAL3, dino_pal.data, CPU);
 
@@ -252,7 +254,7 @@ int main(bool arg)
             ); 
 
     // set 23 rows of Background A to use the tiles we loaded into VRAM
-    // updating rowTiles will affecta all rows set here.
+    // updating rowTiles will affect all rows set here.
     for( u16 y=0; y< 23; ++y ) {
         VDP_fillTileMapRectInc( BG_A,
                 TILE_ATTR_FULL( PAL0,// Palette
@@ -325,7 +327,7 @@ int main(bool arg)
         SPR_addSprite( &blackout,  // Sprite defined in resources
                 0,// starting X position
                 i* 32,// starting Y position
-                TILE_ATTR( PAL3,           // specify palette
+                TILE_ATTR( PAL2,           // specify palette
                     1,            // Tile priority ( with background)
                     FALSE,        // flip the sprite vertically?
                     FALSE         // flip the sprite horizontally
