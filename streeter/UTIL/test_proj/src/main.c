@@ -62,6 +62,8 @@ struct P_SPRITE  // player sprite
 };
 struct P_SPRITE carSprite1;
 struct P_SPRITE carSprite2;
+struct P_SPRITE carSprite3;
+struct P_SPRITE carSprite4;
 
 
 // roadside objects
@@ -348,8 +350,7 @@ int main(bool arg)
     // setup palettes
     PAL_setPalette( PAL0, road_images_pal.data, CPU );
     PAL_setPalette( PAL1, car_pal.data, CPU);
-    PAL_setPalette( PAL2, power_pal.data, CPU);
-    PAL_setPalette( PAL3, obj_pal.data, CPU);
+    PAL_setPalette( PAL2, rob_pal.data, CPU);
 
 
 
@@ -421,7 +422,7 @@ int main(bool arg)
     Sprite *powerSprite1 = SPR_addSprite( &sparkle,
             F16_toInt(carSprite1.pos_x)+4, // starting X position
             F16_toInt(carSprite1.pos_y)-8, // starting Y position
-            TILE_ATTR(PAL2,              // specify palette
+            TILE_ATTR(PAL0,              // specify palette
                 1,                 // Tile priority ( with background)
                 FALSE,             // flip the sprite vertically?
                 FALSE              // flip the sprite horizontally
@@ -444,7 +445,7 @@ int main(bool arg)
     Sprite *powerSprite2 = SPR_addSprite( &shield,
             F16_toInt(carSprite2.pos_x)+4, // starting X position
             F16_toInt(carSprite2.pos_y)-4, // starting Y position
-            TILE_ATTR(PAL2,              // specify palette
+            TILE_ATTR(PAL0,              // specify palette
                 1,                 // Tile priority ( with background)
                 FALSE,             // flip the sprite vertically?
                 FALSE              // flip the sprite horizontally
@@ -461,6 +462,31 @@ int main(bool arg)
     SPR_setAnim(carSprite2.sprite, 0);
     SPR_setHFlip(carSprite2.sprite, 1);
 
+
+    carSprite3.sprite = NULL;
+    carSprite3.pos_x = FIX16(180.0); 
+    carSprite3.pos_y = FIX16(186.0);
+    carSprite3.sprite = SPR_addSprite(&robotnik, // Sprite name defined in resources
+            F16_toInt(carSprite3.pos_x), // starting X position
+            F16_toInt(carSprite3.pos_y), // starting Y position
+            TILE_ATTR(PAL2,              // specify palette
+                1,                 // Tile priority ( with background)
+                FALSE,             // flip the sprite vertically?
+                FALSE              // flip the sprite horizontally
+                ));
+
+
+    carSprite4.sprite = NULL;
+    carSprite4.pos_x = FIX16(40.0); 
+    carSprite4.pos_y = FIX16(186.0);
+    carSprite4.sprite = SPR_addSprite(&knuckles, // Sprite name defined in resources
+            F16_toInt(carSprite4.pos_x), // starting X position
+            F16_toInt(carSprite4.pos_y), // starting Y position
+            TILE_ATTR(PAL1,              // specify palette
+                1,                 // Tile priority ( with background)
+                FALSE,             // flip the sprite vertically?
+                FALSE              // flip the sprite horizontally
+                ));
 
     Sprite *marker_sprite = SPR_addSprite(&markers,   // Sprite name defined in resources
             -32, 
