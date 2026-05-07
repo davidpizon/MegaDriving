@@ -430,10 +430,12 @@ int main(bool arg)
             currAngleOffsetCol = currAngle * _COLS_A;  
             currAngleOffsetRow = currAngle * _ROWS_A; 
             for( u16 i=0; i < COLS; ++i ) {
-                VscrollA[i] = _vScroll[ currAngleOffsetCol + i] + 24;
+                VscrollA[i] = _vScroll[ currAngleOffsetCol + i] + 24; 
             }
-            for( u16 i=0; i < _ROWS_A; ++i ) {
-                HscrollB[i] = _hScroll[ currAngleOffsetRow + i] + SCROLL_CENTER;
+
+
+            for( u16 i=0; i < _ROWS_A; ++i ) { // TODO: reduce copy overhead 
+                HscrollB[i] = _hScroll[ currAngleOffsetRow + i] + SCROLL_CENTER; // TODO: bake SCROLL_CENTER into _hScroll
                 HscrollA[i] = HscrollB[i];
             }
         }
@@ -455,7 +457,7 @@ int main(bool arg)
 
 
         // set scroll values
-        VDP_setHorizontalScrollLine(BG_B, 0, HscrollB, ROWS, DMA_QUEUE);
+        VDP_setHorizontalScrollLine(BG_B, 0, HscrollB, ROWS, DMA_QUEUE); 
         VDP_setHorizontalScrollLine(BG_A, 0, HscrollA, ROWS, DMA_QUEUE);
         VDP_setVerticalScrollTile(BG_B, 0, VscrollBUpper, COLS, DMA_QUEUE);
         VDP_setVerticalScrollTile(BG_A, 0, VscrollA, COLS, DMA_QUEUE);
